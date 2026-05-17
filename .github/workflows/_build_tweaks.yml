@@ -210,6 +210,7 @@ jobs:
         if: steps.cache_tweaks.outputs.cache_youmute_hit != 'true'
         run: |
           git clone --quiet --depth=1 https://github.com/PoomSmart/YouMute.git
+          sed -i 's/\[self isInlinePlaybackActive\] ? muted : shouldMute()/shouldMute()/g' YouMute/Tweak.x
           cd YouMute && make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
           mv packages/*.deb ${{ github.workspace }}/ym.deb
 
