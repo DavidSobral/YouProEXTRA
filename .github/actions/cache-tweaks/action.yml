@@ -188,14 +188,14 @@ runs:
       id: cache_youspeed
       with:
         path: ${{ github.workspace }}/youspeed.deb
-        key: youspeed-${{ inputs.youspeed_commit }}-sdk${{ inputs.sdk_version }}
+        key: youspeed-v1-${{ inputs.youspeed_commit }}-sdk${{ inputs.sdk_version }}
 
     - uses: actions/cache@v4
       if: inputs.youmute_commit != ''
       id: cache_youmute
       with:
         path: ${{ github.workspace }}/ym.deb
-        key: youmute-${{ inputs.youmute_commit }}-sdk${{ inputs.sdk_version }}
+        key: youmute-v1-${{ inputs.youmute_commit }}-sdk${{ inputs.sdk_version }}
 
     - uses: actions/cache@v4
       if: inputs.youloop_commit != ''
