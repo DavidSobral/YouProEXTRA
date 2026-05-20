@@ -107,10 +107,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: Hide Sensitive Inputs
-        uses: levibostian/action-hide-sensitive-inputs@v1
+        uses: levibostian/action-hide-sensitive-inputs@1.2.0
         with:
           exclude_inputs: tweak_choice,bundle_id,display_name,youpip,ytuhd,ryd,ytabconfig,youquality,demc,youchoose,ythold,volumeboost,nativeshare,opensafari
 
@@ -230,7 +230,7 @@ jobs:
           mv packages/*.deb ${{ github.workspace }}/ytvo.deb
 
       - name: Checkout Base Tweak
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           repository: mrdrvt99/LRD-DLTube
           ref: ${{ inputs.tweak_choice == 'LRD' && 'main' || 'main1' }}
@@ -353,7 +353,7 @@ jobs:
           cyan -i youtube.ipa -o YouTube_${{ inputs.tweak_choice }}_${{ env.YT_VERSION }}_${{ env.TWEAK_VERSION }}.ipa -uwesf $tweaks -n "${{ inputs.display_name }}" -b ${{ inputs.bundle_id }}
 
       - name: Create a Draft Release
-        uses: softprops/action-gh-release@v2.6.2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: yt-ipa${{ github.run_number }}
           name: YouTube_${{ inputs.tweak_choice }}_${{ env.YT_VERSION }}_${{ env.TWEAK_VERSION }} (${{ github.run_number }})

@@ -39,7 +39,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: Install Dependencies
         run: brew install make ldid swiftlint dpkg
@@ -327,7 +327,7 @@ jobs:
           mv packages/*.deb ${{ github.workspace }}/nativeshare.deb
 
       - name: Upload Built Debs as Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: built-debs
           path: |

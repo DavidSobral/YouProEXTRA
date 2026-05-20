@@ -88,13 +88,13 @@ jobs:
 
     steps:
       - name: Download Built Debs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8.0.1
         with:
           name: built-debs
           path: ${{ github.workspace }}
 
       - name: Hide Sensitive Inputs
-        uses: levibostian/action-hide-sensitive-inputs@v1
+        uses: levibostian/action-hide-sensitive-inputs@1.2.0
         with:
           exclude_inputs: bundle_id,display_name,demc,isponsorblock,ythold,volumeboost,nativeshare,opensafari
 
@@ -164,7 +164,7 @@ jobs:
           cyan -i youtube.ipa -o YouProExtra_${{ env.YT_VERSION }}_v${{ env.CUSTOM_DEB_VERSION }}.ipa -uwesf $tweaks -n "${{ inputs.display_name }}" -b ${{ inputs.bundle_id }}
           
       - name: Create a Draft Release
-        uses: softprops/action-gh-release@v2.6.2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: youproextra-customdeb-ipa${{ github.run_number }}
           name: YouProExtra_${{ env.YT_VERSION }}_v${{ env.CUSTOM_DEB_VERSION }} (${{ github.run_number }})

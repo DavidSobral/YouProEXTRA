@@ -99,10 +99,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: Hide Sensitive Inputs
-        uses: levibostian/action-hide-sensitive-inputs@v1
+        uses: levibostian/action-hide-sensitive-inputs@1.2.0
         with:
           exclude_inputs: bundle_id,display_name,youpip,ytuhd,ryd,ytabconfig,youquality,demc,youchoose,ythold,volumeboost,nativeshare,opensafari
 
@@ -334,7 +334,7 @@ jobs:
           cyan -i youtube.ipa -o YTKillerPlus_${{ env.YT_VERSION }}_${{ env.YTKP_VERSION }}.ipa -uwesf $tweaks -n "${{ inputs.display_name }}" -b ${{ inputs.bundle_id }}
                     
       - name: Create a Draft Release
-        uses: softprops/action-gh-release@v2.6.2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ytkp-ipa${{ github.run_number }}
           name: YTKillerPlus_${{ env.YT_VERSION }}_${{ env.YTKP_VERSION }} (${{ github.run_number }})
