@@ -19,6 +19,15 @@ inputs:
   youquality:
     required: false
     default: 'true'
+  youchoose:
+    required: false
+    default: 'true'
+  gonerino:
+    required: false
+    default: 'true'
+  yougetcaption:
+    required: false
+    default: 'true'
   isponsorblock:
     required: false
     default: 'false'
@@ -71,9 +80,6 @@ inputs:
   ytsilentvote_commit:
     required: false
     default: ''
-  youshare_commit:
-    required: false
-    default: ''
   gonerino_commit:
     required: false
     default: ''
@@ -120,7 +126,6 @@ outputs:
   cache_youslider_hit:     { value: "${{ steps.cache_youslider.outputs.cache-hit }}" }
   cache_youchoose_hit:     { value: "${{ steps.cache_youchoose.outputs.cache-hit }}" }
   cache_ytsilentvote_hit:  { value: "${{ steps.cache_ytsilentvote.outputs.cache-hit }}" }
-  cache_youshare_hit:      { value: "${{ steps.cache_youshare.outputs.cache-hit }}" }
   cache_gonerino_hit:      { value: "${{ steps.cache_gonerino.outputs.cache-hit }}" }
   cache_ytweaks_hit:       { value: "${{ steps.cache_ytweaks.outputs.cache-hit }}" }
   cache_yougetcaption_hit: { value: "${{ steps.cache_yougetcaption.outputs.cache-hit }}" }
@@ -219,6 +224,7 @@ runs:
         key: youslider-${{ inputs.youslider_commit }}-sdk${{ inputs.sdk_version }}
 
     - uses: actions/cache@v5.0.5
+      if: inputs.youchoose == 'true'
       id: cache_youchoose
       with:
         path: ${{ github.workspace }}/youchoose.deb
@@ -232,13 +238,7 @@ runs:
         key: ytsilentvote-${{ inputs.ytsilentvote_commit }}-sdk${{ inputs.sdk_version }}
 
     - uses: actions/cache@v5.0.5
-      id: cache_youshare
-      with:
-        path: ${{ github.workspace }}/youshare.deb
-        key: youshare-${{ inputs.youshare_commit }}-sdk${{ inputs.sdk_version }}
-
-    - uses: actions/cache@v5.0.5
-      if: inputs.gonerino_commit != ''
+      if: inputs.gonerino == 'true'
       id: cache_gonerino
       with:
         path: ${{ github.workspace }}/gonerino.deb
@@ -252,7 +252,7 @@ runs:
         key: ytweaks-${{ inputs.ytweaks_commit }}-sdk${{ inputs.sdk_version }}
 
     - uses: actions/cache@v5.0.5
-      if: inputs.yougetcaption_commit != ''
+      if: inputs.yougetcaption == 'true'
       id: cache_yougetcaption
       with:
         path: ${{ github.workspace }}/ygc.deb
@@ -270,7 +270,7 @@ runs:
       id: cache_isponsorblock
       with:
         path: ${{ github.workspace }}/isponsorblock.deb
-        key: isponsorblock-${{ inputs.isponsorblock_commit }}-sdk${{ inputs.sdk_version }}
+        key: isponsorblock-v1-${{ inputs.isponsorblock_commit }}-sdk${{ inputs.sdk_version }}
 
     - uses: actions/cache@v5.0.5
       if: inputs.demc == 'true'

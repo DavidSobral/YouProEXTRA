@@ -138,12 +138,18 @@ jobs:
           cyan -i youtube.ipa -o YouProExtra_${{ env.YT_VERSION }}_${{ env.YOUPRO_VERSION }}.ipa -uwesf $tweaks -n "${{ inputs.display_name }}" -b ${{ inputs.bundle_id }}
           
       - name: Create a Draft Release
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: youproextra-ipa${{ github.run_number }}
-          name: YouProExtra_${{ env.YT_VERSION }}_${{ env.YOUPRO_VERSION }} (${{ github.run_number }})
-          files: YouProExtra_${{ env.YT_VERSION }}_${{ env.YOUPRO_VERSION }}.ipa
-          draft: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          i=1
+          while gh release view "youproextra-ipa${i}" --repo "$GITHUB_REPOSITORY" &>/dev/null; do
+            i=$(( i + 1 ))
+          done
+          gh release create "youproextra-ipa${i}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "YouProExtra_${{ env.YT_VERSION }}_${{ env.YOUPRO_VERSION }}" \
+            --draft \
+            YouProExtra_${{ env.YT_VERSION }}_${{ env.YOUPRO_VERSION }}.ipa
 
       - name: Job Summary - Build Complete
         run: echo -e '### 🛠️ Build YouPro IPA Complete!' >> $GITHUB_STEP_SUMMARY
