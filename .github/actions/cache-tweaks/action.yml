@@ -28,6 +28,27 @@ inputs:
   yougetcaption:
     required: false
     default: 'true'
+  youslider:
+    required: false
+    default: 'true'
+  ytsilentvote:
+    required: false
+    default: 'true'
+  ytweaks:
+    required: false
+    default: 'true'
+  youspeed:
+    required: false
+    default: 'true'
+  youmute:
+    required: false
+    default: 'true'
+  youloop:
+    required: false
+    default: 'true'
+  alderis:
+    required: false
+    default: 'true'
   isponsorblock:
     required: false
     default: 'false'
@@ -185,35 +206,35 @@ runs:
         key: ytvo-${{ inputs.ytvo_commit }}-sdk${{ inputs.sdk_version }}
 
     - uses: actions/cache@v5.0.5
-      if: inputs.youspeed_commit != ''
+      if: inputs.youspeed == 'true' && inputs.youspeed_commit != ''
       id: cache_youspeed
       with:
         path: ${{ github.workspace }}/youspeed.deb
         key: youspeed-v1-${{ inputs.youspeed_commit }}-sdk${{ inputs.sdk_version }}
 
     - uses: actions/cache@v5.0.5
-      if: inputs.youmute_commit != ''
+      if: inputs.youmute == 'true' && inputs.youmute_commit != ''
       id: cache_youmute
       with:
         path: ${{ github.workspace }}/ym.deb
         key: youmute-v1-${{ inputs.youmute_commit }}-sdk${{ inputs.sdk_version }}
 
     - uses: actions/cache@v5.0.5
-      if: inputs.youloop_commit != ''
+      if: inputs.youloop == 'true' && inputs.youloop_commit != ''
       id: cache_youloop
       with:
         path: ${{ github.workspace }}/youloop.deb
         key: youloop-${{ inputs.youloop_commit }}-sdk${{ inputs.sdk_version }}
 
     - uses: actions/cache@v5.0.5
-      if: inputs.alderis_commit != ''
+      if: inputs.alderis == 'true' && inputs.alderis_commit != ''
       id: cache_alderis
       with:
         path: ${{ github.workspace }}/alderis.deb
         key: alderis-${{ inputs.alderis_commit }}-sdk${{ inputs.sdk_version }}
 
     - uses: actions/cache@v5.0.5
-      if: inputs.youslider_commit != ''
+      if: inputs.youslider == 'true' && inputs.youslider_commit != ''
       id: cache_youslider
       with:
         path: ${{ github.workspace }}/youslider.deb
@@ -227,7 +248,7 @@ runs:
         key: youchoose-${{ inputs.youchoose_commit }}-sdk${{ inputs.sdk_version }}
 
     - uses: actions/cache@v5.0.5
-      if: inputs.ytsilentvote_commit != ''
+      if: inputs.ytsilentvote == 'true' && inputs.ytsilentvote_commit != ''
       id: cache_ytsilentvote
       with:
         path: ${{ github.workspace }}/ytnovote.deb
@@ -241,7 +262,7 @@ runs:
         key: gonerino-${{ inputs.gonerino_commit }}-sdk${{ inputs.sdk_version }}
 
     - uses: actions/cache@v5.0.5
-      if: inputs.ytweaks_commit != ''
+      if: inputs.ytweaks == 'true' && inputs.ytweaks_commit != ''
       id: cache_ytweaks
       with:
         path: ${{ github.workspace }}/ytweaks.deb

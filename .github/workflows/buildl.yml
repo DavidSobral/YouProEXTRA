@@ -1,13 +1,13 @@
-name: Build LRD/DLTube IPA
+name: Build TubeLRD/DLTube IPA
 on:
   workflow_dispatch:
     inputs:
       tweak_choice:
-        description: "LRD/DLTube"
+        description: "TubeLRD/DLTube"
         required: true
         type: choice
         options:
-          - LRD
+          - TubeLRD
           - DLTube
 
       ipa_url:
@@ -112,7 +112,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build LRD/DLTube IPA
+    name: Build TubeLRD/DLTube IPA
     runs-on: macos-latest
     permissions:
       contents: write
@@ -120,7 +120,7 @@ jobs:
       HOMEBREW_NO_ENV_HINTS: 1
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
 
       - name: Hide Sensitive Inputs
         uses: levibostian/action-hide-sensitive-inputs@1.2.0
@@ -152,7 +152,10 @@ jobs:
           nativeshare: ${{ inputs.nativeshare }}
 
       - name: Install Dependencies
-        run: brew install --quiet make ldid swiftlint dpkg meson ninja
+        run: |
+          brew uninstall --ignore-dependencies bicep || true
+          brew untap aws/tap azure/bicep || true
+          brew install --quiet make ldid swiftlint dpkg meson ninja
 
       - name: Set PATH Environment Variables
         run: |
@@ -246,10 +249,10 @@ jobs:
           mv packages/*.deb ${{ github.workspace }}/ytvo.deb
 
       - name: Checkout Base Tweak
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
         with:
           repository: mrdrvt99/LRD-DLTube
-          ref: ${{ inputs.tweak_choice == 'LRD' && 'main' || 'main1' }}
+          ref: ${{ inputs.tweak_choice == 'TubeLRD' && 'main' || 'main1' }}
           path: base_tweak
           submodules: recursive
 
@@ -258,7 +261,7 @@ jobs:
           cd base_tweak
           echo "TWEAK_VERSION=$(grep '^Version:' DEBIAN/control | awk '{print $2}')" >> $GITHUB_ENV
           chmod -R 755 .
-          if [ "${{ inputs.tweak_choice }}" = "LRD" ]; then
+          if [ "${{ inputs.tweak_choice }}" = "TubeLRD" ]; then
             dpkg-deb --root-owner-group -Zgzip --build . ${{ github.workspace }}/TubeLRD.deb
           else
             dpkg-deb --root-owner-group -Zgzip --build . ${{ github.workspace }}/DLTube.deb

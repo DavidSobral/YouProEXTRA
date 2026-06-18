@@ -1,4 +1,4 @@
-name: Build IPA (No Tweak)
+name: Build IPA (No Base Tweak)
 
 on:
   workflow_dispatch:
@@ -23,6 +23,90 @@ on:
 
       opensafari:
         description: "Integrate Open in YouTube (Safari Extension)"
+        default: true
+        required: false
+        type: boolean
+
+      youpip:
+        description: "Integrate YouPiP"
+        default: true
+        required: false
+        type: boolean
+
+      ytuhd:
+        description: "Integrate YTUHD"
+        default: true
+        required: false
+        type: boolean
+
+      ryd:
+        description: "Integrate Return YouTube Dislikes"
+        default: true
+        required: false
+        type: boolean
+
+      ytabconfig:
+        description: "Integrate YTABConfig"
+        default: true
+        required: false
+        type: boolean
+
+      youquality:
+        description: "Integrate YouQuality"
+        default: true
+        required: false
+        type: boolean
+
+      youchoose:
+        description: "Integrate YouChooseQuality"
+        default: true
+        required: false
+        type: boolean
+
+      youslider:
+        description: "Integrate YouSlider"
+        default: true
+        required: false
+        type: boolean
+
+      ytsilentvote:
+        description: "Integrate YTSilentVote"
+        default: true
+        required: false
+        type: boolean
+
+      ytweaks:
+        description: "Integrate YTweaks"
+        default: true
+        required: false
+        type: boolean
+
+      gonerino:
+        description: "Integrate Gonerino"
+        default: true
+        required: false
+        type: boolean
+
+      yougetcaption:
+        description: "Integrate YouGetCaption"
+        default: true
+        required: false
+        type: boolean
+
+      youspeed:
+        description: "Integrate YouSpeed"
+        default: true
+        required: false
+        type: boolean
+
+      youmute:
+        description: "Integrate YouMute"
+        default: true
+        required: false
+        type: boolean
+
+      youloop:
+        description: "Integrate YouLoop"
         default: true
         required: false
         type: boolean
@@ -70,6 +154,20 @@ jobs:
       ythold: ${{ inputs.ythold }}
       volumeboost: ${{ inputs.volumeboost }}
       nativeshare: ${{ inputs.nativeshare }}
+      youpip: ${{ inputs.youpip }}
+      ytuhd: ${{ inputs.ytuhd }}
+      ryd: ${{ inputs.ryd }}
+      ytabconfig: ${{ inputs.ytabconfig }}
+      youquality: ${{ inputs.youquality }}
+      youslider: ${{ inputs.youslider }}
+      ytsilentvote: ${{ inputs.ytsilentvote }}
+      ytweaks: ${{ inputs.ytweaks }}
+      youchoose: ${{ inputs.youchoose }}
+      gonerino: ${{ inputs.gonerino }}
+      yougetcaption: ${{ inputs.yougetcaption }}
+      youspeed: ${{ inputs.youspeed }}
+      youmute: ${{ inputs.youmute }}
+      youloop: ${{ inputs.youloop }}
       youpro: false
       opensafari: ${{ inputs.opensafari }}
 
@@ -91,7 +189,7 @@ jobs:
       - name: Hide Sensitive Inputs
         uses: levibostian/action-hide-sensitive-inputs@1.2.0
         with:
-          exclude_inputs: bundle_id,display_name,demc,isponsorblock,ythold,volumeboost,nativeshare,opensafari
+          exclude_inputs: bundle_id,display_name,demc,isponsorblock,ythold,volumeboost,nativeshare,opensafari,youpip,ytuhd,ryd,ytabconfig,youquality,youslider,ytsilentvote,ytweaks,youchoose,gonerino,yougetcaption,youspeed,youmute,youloop
 
       - name: Download and Validate IPA
         run: |
