@@ -173,7 +173,7 @@ jobs:
 
   package:
     name: Build IPA
-    runs-on: macos-latest
+    runs-on: macos-15
     needs: build-tweaks
     permissions:
       contents: write

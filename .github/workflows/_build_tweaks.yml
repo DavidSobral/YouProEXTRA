@@ -91,7 +91,7 @@ on:
 jobs:
   build-tweaks:
     name: Build Tweaks
-    runs-on: macos-latest
+    runs-on: macos-15
     env:
       HOMEBREW_NO_ENV_HINTS: 1
     steps:

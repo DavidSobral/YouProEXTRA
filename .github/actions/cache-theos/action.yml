@@ -21,7 +21,7 @@ runs:
       uses: actions/cache@v5.0.5
       with:
         path: ${{ github.workspace }}/theos
-        key: theos-v3-9bc73406-sdk${{ inputs.sdk_version }}
+        key: theos-v3-9bc73406cf80b711ef4d02c15ff1dedc4478a275-sdk${{ inputs.sdk_version }}
 
     - name: Clone Theos
       if: steps.cache.outputs.cache-hit != 'true'

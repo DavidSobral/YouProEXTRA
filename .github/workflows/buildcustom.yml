@@ -185,7 +185,7 @@ jobs:
 
   package:
     name: Build IPA with Custom tweak
-    runs-on: macos-latest
+    runs-on: macos-15
     needs: build-tweaks
     permissions:
       contents: write
