@@ -96,7 +96,7 @@ jobs:
       HOMEBREW_NO_ENV_HINTS: 1
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7
 
       - name: Install Dependencies
         run: |
@@ -386,7 +386,7 @@ jobs:
           mv packages/*.deb ${{ github.workspace }}/nativeshare.deb
 
       - name: Upload Built Debs as Artifacts
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v7
         with:
           name: built-debs
           path: |

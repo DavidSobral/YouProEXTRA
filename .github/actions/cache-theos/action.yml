@@ -18,7 +18,7 @@ runs:
   steps:
     - name: Restore Theos cache
       id: cache
-      uses: actions/cache@v5.0.5
+      uses: actions/cache@v6
       with:
         path: ${{ github.workspace }}/theos
         key: theos-v3-9bc73406cf80b711ef4d02c15ff1dedc4478a275-sdk${{ inputs.sdk_version }}

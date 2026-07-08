@@ -84,5 +84,5 @@ NOTE: If you modified workflow files, delete any existing caches in the Actions 
 <ul>
    <li><strong>Latest confirmed:</strong> 21.26.4</li>
    <li><strong>Date tested:</strong> June 22, 2026</li>
-   <li><strong>YouPro/YTLite/YTKP:</strong> 0.3/5.2.1/5.7.2</li>
+   <li><strong>YouPro/YTLite/YTKP:</strong> 0.3/5.2.1/5.7.6</li>
 </ul>

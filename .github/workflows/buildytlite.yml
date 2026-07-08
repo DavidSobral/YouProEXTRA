@@ -112,10 +112,10 @@ jobs:
       HOMEBREW_NO_ENV_HINTS: 1
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7
 
       - name: Hide Sensitive Inputs
-        uses: levibostian/action-hide-sensitive-inputs@1.2.0
+        uses: levibostian/action-hide-sensitive-inputs@v1
         with:
           exclude_inputs: bundle_id,display_name,youpip,ytuhd,ryd,ytabconfig,youquality,gonerino,yougetcaption,demc,youchoose,ythold,volumeboost,nativeshare,opensafari
 
