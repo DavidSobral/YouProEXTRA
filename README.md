@@ -87,9 +87,12 @@ NOTE: If you modified workflow files, delete any existing caches in the Actions 
    <li><strong>Latest confirmed:</strong> 21.24.3</li>
   
   > [!WARNING]  
-  > +21.25.5 version and newer are **not recommended**!  
-  > If you want a newer version, you can build it in the **Actions** tab.
+  > - +21.25.5 version and newer are **not recommended**!  
+  > - If you want a newer version, you can build it in the **Actions** tab.
+
+  > [!NOTE]
+  > - iOS14+ builds are available now in releases page!
   
-   <li><strong>Date tested:</strong> July 17, 2026</li>
+   <li><strong>Date tested:</strong> July 20, 2026</li>
    <li><strong>YouPro/YTLite/YTKP:</strong> 0.3/5.2.2/5.9.4</li>
 </ul>
