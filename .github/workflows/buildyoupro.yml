@@ -69,12 +69,6 @@ on:
         required: false
         type: boolean
 
-      ytsilentvote:
-        description: "Integrate YTSilentVote"
-        default: true
-        required: false
-        type: boolean
-
       ytweaks:
         description: "Integrate YTweaks"
         default: true
@@ -134,6 +128,11 @@ on:
 #        default: false
 #        required: false
 #        type: boolean
+      pleasedontstopthemusic:
+        description: "Integrate PleaseDontStopTheMusic"
+        default: false
+        required: false
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -152,7 +151,6 @@ jobs:
       ytabconfig: ${{ inputs.ytabconfig }}
       youquality: ${{ inputs.youquality }}
       youslider: ${{ inputs.youslider }}
-      ytsilentvote: ${{ inputs.ytsilentvote }}
       ytweaks: ${{ inputs.ytweaks }}
       youchoose: ${{ inputs.youchoose }}
       gonerino: ${{ inputs.gonerino }}
@@ -163,7 +161,8 @@ jobs:
 #     ythold: ${{ inputs.ythold }} //doesn't work with youpro
 #     nativeshare: ${{ inputs.nativeshare }} //doesn't work with youpro
       opensafari: ${{ inputs.opensafari }}
-
+      pleasedontstopthemusic: ${{ inputs.pleasedontstopthemusic }}
+      
   package:
     name: Build YouPro IPA
     runs-on: macos-15
@@ -182,7 +181,7 @@ jobs:
       - name: Hide Sensitive Inputs
         uses: levibostian/action-hide-sensitive-inputs@v1
         with:
-          exclude_inputs: bundle_id,display_name,demc,isponsorblock,opensafari,youpip,ryd,ytabconfig,youquality,youslider,ytsilentvote,ytweaks,youchoose,gonerino,yougetcaption,youspeed,youmute,youloop
+          exclude_inputs: bundle_id,display_name,demc,isponsorblock,opensafari,youpip,ytuhd,ryd,ytabconfig,youquality,youslider,ytweaks,youchoose,gonerino,yougetcaption,youspeed,youmute,youloop,pleasedontstopthemusic
 
       - name: Download and Validate IPA
         run: |

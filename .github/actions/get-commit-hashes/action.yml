@@ -17,6 +17,9 @@ inputs:
   nativeshare:
     required: false
     default: 'false'
+  pleasedontstopthemusic:
+    required: false
+    default: 'false'
 
 outputs:
   theos:
@@ -61,9 +64,6 @@ outputs:
   youchoose:
     description: YouChooseQuality commit hash
     value: ${{ steps.hashes.outputs.youchoose }}
-  ytsilentvote:
-    description: YTSilentVote commit hash
-    value: ${{ steps.hashes.outputs.ytsilentvote }}
   gonerino:
     description: Gonerino commit hash
     value: ${{ steps.hashes.outputs.gonerino }}
@@ -94,7 +94,10 @@ outputs:
   youfixplaybackissues:
     description: YouFixPlaybackIssues commit hash
     value: ${{ steps.hashes.outputs.youfixplaybackissues }}
-    
+  pleasedontstopthemusic:
+    description: PleaseDontStopTheMusic commit hash
+    value: ${{ steps.hashes.outputs.pleasedontstopthemusic }}
+
 runs:
   using: composite
   steps:
@@ -120,7 +123,6 @@ runs:
         echo "alderis=$(get_hash hbang/Alderis)"                                     >> $GITHUB_OUTPUT
         echo "youslider=$(get_hash PoomSmart/YouSlider)"                             >> $GITHUB_OUTPUT
         echo "youchoose=$(get_hash PoomSmart/YouChooseQuality)"                      >> $GITHUB_OUTPUT
-        echo "ytsilentvote=$(get_hash PoomSmart/YTSilentVote)"                       >> $GITHUB_OUTPUT
         echo "gonerino=$(get_hash castdrian/Gonerino)"                               >> $GITHUB_OUTPUT
         echo "ytweaks=$(get_hash fosterbarnes/YTweaks)"                              >> $GITHUB_OUTPUT
         echo "yougetcaption=$(get_hash PoomSmart/YouGetCaption)"                     >> $GITHUB_OUTPUT
@@ -155,4 +157,10 @@ runs:
           echo "nativeshare=$(get_hash jkhsjdhjs/youtube-native-share)"              >> $GITHUB_OUTPUT
         else
           echo "nativeshare=disabled"                                                >> $GITHUB_OUTPUT
+        fi
+
+        if [ "${{ inputs.pleasedontstopthemusic }}" = "true" ]; then
+          echo "pleasedontstopthemusic=$(get_hash mikey820/PleaseDontStopTheMusic)"  >> $GITHUB_OUTPUT
+        else
+          echo "pleasedontstopthemusic=disabled"                                     >> $GITHUB_OUTPUT
         fi

@@ -31,9 +31,6 @@ inputs:
   youslider:
     required: false
     default: 'true'
-  ytsilentvote:
-    required: false
-    default: 'true'
   ytweaks:
     required: false
     default: 'true'
@@ -62,6 +59,9 @@ inputs:
     required: false
     default: 'false'
   nativeshare:
+    required: false
+    default: 'false'
+  pleasedontstopthemusic:
     required: false
     default: 'false'
   theos_commit:
@@ -98,9 +98,6 @@ inputs:
   youchoose_commit:
     required: false
     default: ''
-  ytsilentvote_commit:
-    required: false
-    default: ''
   gonerino_commit:
     required: false
     default: ''
@@ -130,7 +127,10 @@ inputs:
     default: 'disabled'
   youfixplaybackissues_commit:
     required: true
-    
+  pleasedontstopthemusic_commit:
+    required: false
+    default: 'disabled'
+
 outputs:
   cache_youpip_hit:        { value: "${{ steps.cache_youpip.outputs.cache-hit }}" }
   cache_ytuhd_hit:         { value: "${{ steps.cache_ytuhd.outputs.cache-hit }}" }
@@ -145,7 +145,6 @@ outputs:
   cache_alderis_hit:       { value: "${{ steps.cache_alderis.outputs.cache-hit }}" }
   cache_youslider_hit:     { value: "${{ steps.cache_youslider.outputs.cache-hit }}" }
   cache_youchoose_hit:     { value: "${{ steps.cache_youchoose.outputs.cache-hit }}" }
-  cache_ytsilentvote_hit:  { value: "${{ steps.cache_ytsilentvote.outputs.cache-hit }}" }
   cache_gonerino_hit:      { value: "${{ steps.cache_gonerino.outputs.cache-hit }}" }
   cache_ytweaks_hit:       { value: "${{ steps.cache_ytweaks.outputs.cache-hit }}" }
   cache_yougetcaption_hit: { value: "${{ steps.cache_yougetcaption.outputs.cache-hit }}" }
@@ -156,6 +155,7 @@ outputs:
   cache_volumeboost_hit:   { value: "${{ steps.cache_volumeboost.outputs.cache-hit }}" }
   cache_nativeshare_hit:   { value: "${{ steps.cache_nativeshare.outputs.cache-hit }}" }
   cache_youfixplaybackissues_hit: { value: "${{ steps.cache_youfixplaybackissues.outputs.cache-hit }}" }
+  cache_pleasedontstopthemusic_hit: { value: "${{ steps.cache_pleasedontstopthemusic.outputs.cache-hit }}" }
 
 runs:
   using: composite
@@ -251,13 +251,6 @@ runs:
         key: youchoose-v1-${{ inputs.youchoose_commit }}-sdk${{ inputs.sdk_version }}
 
     - uses: actions/cache@v6
-      if: inputs.ytsilentvote == 'true' && inputs.ytsilentvote_commit != ''
-      id: cache_ytsilentvote
-      with:
-        path: ${{ github.workspace }}/ytnovote.deb
-        key: ytsilentvote-${{ inputs.ytsilentvote_commit }}-sdk${{ inputs.sdk_version }}
-
-    - uses: actions/cache@v6
       if: inputs.gonerino == 'true'
       id: cache_gonerino
       with:
@@ -325,3 +318,10 @@ runs:
       with:
         path: ${{ github.workspace }}/youfixplaybackissues.deb
         key: youfixplaybackissues-${{ inputs.youfixplaybackissues_commit }}-sdk${{ inputs.sdk_version }}
+
+    - uses: actions/cache@v6
+      if: inputs.pleasedontstopthemusic == 'true'
+      id: cache_pleasedontstopthemusic
+      with:
+        path: ${{ github.workspace }}/pleasedontstopthemusic.deb
+        key: pleasedontstopthemusic-${{ inputs.pleasedontstopthemusic_commit }}-sdk${{ inputs.sdk_version }}

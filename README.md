@@ -5,9 +5,9 @@ YouTube IPA builder packed with customizable tweaks. Also Known as Youtubemaxxin
 - **[YouPro](https://t.me/alibusut)** - Basic Youtube Premium features; Download Videos, No ads, Background Playback.
 - **[YoutubePlus/YTLite](https://github.com/dayanch96/YTLite)** - A flexible enhancer for YouTube on iOS, featuring over hundred customizable options.
 - **[YTKillerPlus](https://repo.ikghd.me/depictions/?p=me.ikghd.ytkplus)** - Alternative Youtube tweak with more customized options.
-- **[YouMod](https://github.com/Tonwalter888/YouMod)** - a free alternative youtube tweak.
+- **[YouMod](https://github.com/Tonwalter888/YouMod)** - a free alternative youtube tweak with customized options.
 - **[LRD](https://t.me/LRD_Update)/[DLTube](https://x.com/dltweaks_)** - more optional YouTube tweaks. Download Videos, No ads and Background Playback.
-- **[YTKACE](https://github.com/Epic0001/YTKACE)** - A new free and open-source YouTube enhancer for iOS with downloads, SponsorBlock, player controls, and interface customization.
+- **[YTKACE](https://github.com/itzzace/ytkace)** - A new free and open-source YouTube enhancer for iOS with downloads, SponsorBlock, DeArrow, player controls, and interface customization.
 - **[YTMusicUltimate](https://github.com/mrdrvt99/YTMusicUltimate)** - Background playback, ad removal, Downloads and other small improvements.
 
 ---
@@ -23,9 +23,8 @@ YouTube IPA builder packed with customizable tweaks. Also Known as Youtubemaxxin
 - [YouQuality](https://github.com/PoomSmart/YTABConfig) - Views/changes video quality on iOS YouTube app faster.
 - [YouChooseQuality](https://github.com/PoomSmart/YouChooseQuality) - Auto-selects the video quality of choice in iOS YouTube app.
 - [YouSlider](https://github.com/PoomSmart/YouSlider) - Customizes iOS YouTube video slider and scrubber.**(🛠️custom build)**
-- [YTSilentVote](https://github.com/PoomSmart/YTSilentVote.git) - No messages will pop up as you like/dislike videos.**(🛠️custom build)**
 - [YouGetCaption](https://github.com/PoomSmart/YouGetCaption) - Views and copies caption from YouTube videos.
-- [YTweaks](https://github.com/fosterbarnes/YTweaks) - Various tweaks for the iOS YouTube app.**(🛠️custom build)**
+- [YTweaks](https://github.com/fosterbarnes/YTweaks) - Various tweaks for the iOS YouTube app.
 - [Gonerino](https://github.com/castdrian/Gonerino) - Filter videos/channels/keywords that you don't want them to show up on your feeds
 - [iSponsorBlock](https://github.com/Galactic-Dev/iSponsorBlock.git) - Skip Sponsorships in youtube videos. 
 - [DontEatMyContent](https://github.com/therealFoxster/DontEatMyContent) - Prevent the notch/Dynamic Island from munching on 2:1 video content in YouTube 
@@ -36,7 +35,7 @@ YouTube IPA builder packed with customizable tweaks. Also Known as Youtubemaxxin
   > ⚠️ **NOTE:** If you're having issues with right-edge panel keyboard buttons not responding, turn it off.⚠️
 - [YTNativeShare](https://github.com/jkhsjdhjs/youtube-native-share) -  Bypass YouTubes own share sheet and use the system activity view instead. Removes source identifiers (si). 
 - [YouFixPlaybackIssues](https://github.com/AppropriateNet2928/YTLitePlusRenewed) -  Core Tweak designed to fix playback issues like "Something went wrong, try again" and "no stream. tap to retry", **enabled** by default.
-
+- [NEW!][PleaseDontStopTheMusic](https://github.com/mikey820/PleaseDontStopTheMusic) -  An iOS tweak that allows multiple audio sources to play simultaneously by preventing audio session interruptions. works best in iOS games.
 ---
 
 > [!IMPORTANT]
@@ -98,6 +97,6 @@ YouTube IPA builder packed with customizable tweaks. Also Known as Youtubemaxxin
   > [!NOTE]
   > - iOS14+ builds are now available on the releases page.
   
-   <li><strong>Date tested:</strong> July 26, 2026</li>
-   <li><strong>YouPro/YTLite/YTKP/YTKACE:</strong> 1.3/5.2.2/5.13/0.6.8</li>
+   <li><strong>Date tested:</strong> Aug 10, 2026</li>
+   <li><strong>YouPro/YTLite/YTKP/YTKACE:</strong> 1.3.1/5.2.2/6.0/0.8.3</li>
 </ul>

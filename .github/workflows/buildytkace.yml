@@ -1,4 +1,4 @@
-name: Build YouTubePlus (YTLite) IPA
+name: Build YTKACE IPA
 on:
   workflow_dispatch:
     inputs:
@@ -39,8 +39,8 @@ on:
         type: boolean
 
       ytuhd:
-        description: "Integrate YTUHD"
-        default: true
+        description: "Integrate YTUHD(+21.25.5 not supported)"
+        default: false
         required: false
         type: boolean
 
@@ -116,7 +116,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build YouTubePlus (YTLite) IPA
+    name: Build YTKACE IPA
     runs-on: macos-15
     permissions:
       contents: write
@@ -189,7 +189,7 @@ jobs:
           chmod +x /usr/local/bin/tbd
 
       - name: Clone Open in YouTube (Safari Extension)
-        if: inputs.opensafari == true
+        if: inputs.opensafari == true  
         run: |
           git clone --quiet -n --depth=1 --filter=tree:0 https://github.com/BillyCurtis/OpenYouTubeSafariExtension.git
           cd OpenYouTubeSafariExtension
@@ -251,20 +251,20 @@ jobs:
           nativeshare_commit: ${{ steps.commit_hashes.outputs.nativeshare }}
           youfixplaybackissues_commit: ${{ steps.commit_hashes.outputs.youfixplaybackissues }}
           pleasedontstopthemusic_commit: ${{ steps.commit_hashes.outputs.pleasedontstopthemusic }}
-          
+
       - name: Build YTVideoOverlay
         if: steps.cache_tweaks.outputs.cache_ytvo_hit != 'true'
         run: |
           cd YTVideoOverlay && make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
           mv packages/*.deb ${{ github.workspace }}/ytvo.deb
 
-      - name: Clone and Build YTLite
+      - name: Clone and Build YTKACE
         run: |
-          git clone --quiet --depth=1 https://github.com/mrdrvt99/YTL.git
-          cd YTL
-          echo "YTL_VERSION=$(grep '^Version:' DEBIAN/control | awk '{print $2}')" >> $GITHUB_ENV
-          chmod -R 755 .
-          dpkg-deb --root-owner-group -Zgzip --build . ../ytlite.deb
+          git clone --quiet --depth=1 https://github.com/itzzace/ytkace.git
+          cd ytkace
+          echo "YTKACE_VERSION=$(grep '^Version:' control 2>/dev/null | awk '{print $2}' || grep '^Version:' DEBIAN/control | awk '{print $2}')" >> $GITHUB_ENV
+          make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless ARCHS=arm64
+          mv packages/*.deb ${{ github.workspace }}/ytkace.deb
 
       - name: Clone and Build YouPiP
         if: inputs.youpip == true && steps.cache_tweaks.outputs.cache_youpip_hit != 'true'
@@ -380,7 +380,7 @@ jobs:
           cd PleaseDontStopTheMusic
           make -C rootless clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless ARCHS=arm64
           mv rootless/packages/*.deb ${{ github.workspace }}/pleasedontstopthemusic.deb
-          
+
       - name: Inject Tweaks Into IPA
         run: |
           tweaks=""
@@ -390,24 +390,24 @@ jobs:
           for f in *.deb; do
             [ -f "$f" ] && tweaks="$tweaks $f"
           done
-          cyan -i youtube.ipa -o YouTubePlus_${{ env.YT_VERSION }}_${{ env.YTL_VERSION }}.ipa -uwesf $tweaks -n "${{ inputs.display_name }}" -b ${{ inputs.bundle_id }}
+          cyan -i youtube.ipa -o YTKACE_${{ env.YT_VERSION }}_${{ env.YTKACE_VERSION }}.ipa -uwesf $tweaks -n "${{ inputs.display_name }}" -b ${{ inputs.bundle_id }}
 
       - name: Create a Draft Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           i=1
-          while gh release view "ytl-ipa${i}" --repo "$GITHUB_REPOSITORY" &>/dev/null; do
+          while gh release view "ytkace-ipa${i}" --repo "$GITHUB_REPOSITORY" &>/dev/null; do
             i=$(( i + 1 ))
           done
-          gh release create "ytl-ipa${i}" \
+          gh release create "ytkace-ipa${i}" \
             --repo "$GITHUB_REPOSITORY" \
-            --title "YouTubePlus_${{ env.YT_VERSION }}_${{ env.YTL_VERSION }}" \
+            --title "YTKACE_${{ env.YT_VERSION }}_${{ env.YTKACE_VERSION }}" \
             --draft \
-            YouTubePlus_${{ env.YT_VERSION }}_${{ env.YTL_VERSION }}.ipa
+            YTKACE_${{ env.YT_VERSION }}_${{ env.YTKACE_VERSION }}.ipa
 
       - name: Job Summary - Build Complete
-        run: echo -e '### 🛠️ Build YouTubePlus (YTLite) IPA Complete!' >> $GITHUB_STEP_SUMMARY
+        run: echo -e '### 🛠️ Build YTKACE IPA Complete!' >> $GITHUB_STEP_SUMMARY
 
       - name: Job Summary - Output the Draft Release Link
         run: |

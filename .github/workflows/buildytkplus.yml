@@ -64,10 +64,16 @@ on:
 
       youchoose:
         description: "Integrate YouChooseQuality"
-        default: false
+        default: true
         required: false
         type: boolean
-        
+
+      ytweaks:
+        description: "Integrate YTweaks"
+        default: true
+        required: false
+        type: boolean
+
       gonerino:
         description: "Integrate Gonerino"
         default: false
@@ -98,6 +104,12 @@ on:
         required: false
         type: boolean
 
+      pleasedontstopthemusic:
+        description: "Integrate PleaseDontStopTheMusic"
+        default: false
+        required: false
+        type: boolean
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -117,7 +129,7 @@ jobs:
       - name: Hide Sensitive Inputs
         uses: levibostian/action-hide-sensitive-inputs@v1
         with:
-          exclude_inputs: bundle_id,display_name,youpip,ryd,ytabconfig,youquality,gonerino,yougetcaption,demc,youchoose,ythold,volumeboost,nativeshare,opensafari
+          exclude_inputs: bundle_id,display_name,youpip,ytuhd,ryd,ytabconfig,youquality,gonerino,ytweaks,yougetcaption,demc,youchoose,ythold,volumeboost,nativeshare,opensafari,pleasedontstopthemusic
 
       - name: Download and Validate IPA
         run: |
@@ -142,6 +154,7 @@ jobs:
           ythold: ${{ inputs.ythold }}
           volumeboost: ${{ inputs.volumeboost }}
           nativeshare: ${{ inputs.nativeshare }}
+          pleasedontstopthemusic: ${{ inputs.pleasedontstopthemusic }}
 
       - name: Install Dependencies
         run: |
@@ -212,12 +225,14 @@ jobs:
           ytabconfig: ${{ inputs.ytabconfig }}
           youquality: ${{ inputs.youquality }}
           youchoose: ${{ inputs.youchoose }}
+          ytweaks: ${{ inputs.ytweaks }}
           gonerino: ${{ inputs.gonerino }}
           yougetcaption: ${{ inputs.yougetcaption }}
           demc: ${{ inputs.demc }}
           ythold: ${{ inputs.ythold }}
           volumeboost: ${{ inputs.volumeboost }}
           nativeshare: ${{ inputs.nativeshare }}
+          pleasedontstopthemusic: ${{ inputs.pleasedontstopthemusic }}
           theos_commit: ${{ steps.commit_hashes.outputs.theos }}
           youpip_commit: ${{ steps.commit_hashes.outputs.youpip }}
           ytuhd_commit: ${{ steps.commit_hashes.outputs.ytuhd }}
@@ -225,6 +240,7 @@ jobs:
           ygs_commit: ${{ steps.commit_hashes.outputs.ygs }}
           ytvo_commit: ${{ steps.commit_hashes.outputs.ytvo }}
           youchoose_commit: ${{ steps.commit_hashes.outputs.youchoose }}
+          ytweaks_commit: ${{ steps.commit_hashes.outputs.ytweaks }}
           gonerino_commit: ${{ steps.commit_hashes.outputs.gonerino }}
           yougetcaption_commit: ${{ steps.commit_hashes.outputs.yougetcaption }}
           ytabconfig_commit: ${{ steps.commit_hashes.outputs.ytabconfig }}
@@ -234,7 +250,8 @@ jobs:
           volumeboost_commit: ${{ steps.commit_hashes.outputs.volumeboost }}
           nativeshare_commit: ${{ steps.commit_hashes.outputs.nativeshare }}
           youfixplaybackissues_commit: ${{ steps.commit_hashes.outputs.youfixplaybackissues }}
-          
+          pleasedontstopthemusic_commit: ${{ steps.commit_hashes.outputs.pleasedontstopthemusic }}
+
       - name: Build YTVideoOverlay
         if: steps.cache_tweaks.outputs.cache_ytvo_hit != 'true'
         run: |
@@ -298,6 +315,13 @@ jobs:
           cd YouChooseQuality && make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
           mv packages/*.deb ${{ github.workspace }}/youchoose.deb
 
+      - name: Clone and Build YTweaks
+        if: inputs.ytweaks == true && steps.cache_tweaks.outputs.cache_ytweaks_hit != 'true'
+        run: |
+          git clone --quiet --depth=1 https://github.com/fosterbarnes/YTweaks.git
+          cd YTweaks && make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
+          mv packages/*.deb ${{ github.workspace }}/ytweaks.deb
+
       - name: Clone and Build Gonerino
         if: inputs.gonerino == true && steps.cache_tweaks.outputs.cache_gonerino_hit != 'true'
         run: |
@@ -348,7 +372,15 @@ jobs:
           git clone --quiet --depth=1 https://github.com/mrdrvt99/YouFixPlaybackIssues.git
           cd YouFixPlaybackIssues/YouFixPlaybackIssues && make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless TARGET=iphone:clang:18.6
           mv packages/*.deb ${{ github.workspace }}/youfixplaybackissues.deb
-          
+
+      - name: Clone and Build PleaseDontStopTheMusic
+        if: inputs.pleasedontstopthemusic == true && steps.cache_tweaks.outputs.cache_pleasedontstopthemusic_hit != 'true'
+        run: |
+          git clone --quiet --depth=1 https://github.com/mikey820/PleaseDontStopTheMusic.git
+          cd PleaseDontStopTheMusic
+          make -C rootless clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless ARCHS=arm64
+          mv rootless/packages/*.deb ${{ github.workspace }}/pleasedontstopthemusic.deb
+
       - name: Inject Tweaks Into IPA
         run: |
           tweaks=""

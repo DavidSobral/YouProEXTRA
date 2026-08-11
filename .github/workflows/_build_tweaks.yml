@@ -63,10 +63,6 @@ on:
         type: boolean
         required: false
         default: true
-      ytsilentvote:
-        type: boolean
-        required: false
-        default: true
       ytweaks:
         type: boolean
         required: false
@@ -87,7 +83,10 @@ on:
         type: boolean
         required: false
         default: true
-
+      pleasedontstopthemusic:
+        type: boolean
+        required: false
+        default: false
 jobs:
   build-tweaks:
     name: Build Tweaks
@@ -118,6 +117,7 @@ jobs:
           ythold: ${{ inputs.ythold }}
           volumeboost: ${{ inputs.volumeboost }}
           nativeshare: ${{ inputs.nativeshare }}
+          pleasedontstopthemusic: ${{ inputs.pleasedontstopthemusic }}
 
       - name: Cache Theos
         id: theos
@@ -184,12 +184,12 @@ jobs:
           gonerino: ${{ inputs.gonerino }}
           yougetcaption: ${{ inputs.yougetcaption }}
           youslider: ${{ inputs.youslider }}
-          ytsilentvote: ${{ inputs.ytsilentvote }}
           ytweaks: ${{ inputs.ytweaks }}
           youspeed: ${{ inputs.youspeed }}
           youmute: ${{ inputs.youmute }}
           youloop: ${{ inputs.youloop }}
           alderis: ${{ inputs.youslider }}
+          pleasedontstopthemusic: ${{ inputs.pleasedontstopthemusic }}
           theos_commit: ${{ steps.commit_hashes.outputs.theos }}
           youpip_commit: ${{ steps.commit_hashes.outputs.youpip }}
           ytuhd_commit: ${{ steps.commit_hashes.outputs.ytuhd }}
@@ -204,7 +204,6 @@ jobs:
           alderis_commit: ${{ steps.commit_hashes.outputs.alderis }}
           youslider_commit: ${{ steps.commit_hashes.outputs.youslider }}
           youchoose_commit: ${{ steps.commit_hashes.outputs.youchoose }}
-          ytsilentvote_commit: ${{ steps.commit_hashes.outputs.ytsilentvote }}
           gonerino_commit: ${{ steps.commit_hashes.outputs.gonerino }}
           ytweaks_commit: ${{ steps.commit_hashes.outputs.ytweaks }}
           yougetcaption_commit: ${{ steps.commit_hashes.outputs.yougetcaption }}
@@ -215,7 +214,8 @@ jobs:
           volumeboost_commit: ${{ steps.commit_hashes.outputs.volumeboost }}
           nativeshare_commit: ${{ steps.commit_hashes.outputs.nativeshare }}
           youfixplaybackissues_commit: ${{ steps.commit_hashes.outputs.youfixplaybackissues }}
-          
+          pleasedontstopthemusic_commit: ${{ steps.commit_hashes.outputs.pleasedontstopthemusic }}
+
       - name: Build YTVideoOverlay
         if: steps.cache_tweaks.outputs.cache_ytvo_hit != 'true'
         run: |
@@ -314,13 +314,6 @@ jobs:
           cd YouChooseQuality && make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
           mv packages/*.deb ${{ github.workspace }}/youchoose.deb
 
-      - name: Clone and Build YTSilentVote
-        if: inputs.ytsilentvote == true && steps.cache_tweaks.outputs.cache_ytsilentvote_hit != 'true'
-        run: |
-          git clone --quiet --depth=1 https://github.com/PoomSmart/YTSilentVote.git
-          cd YTSilentVote && make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
-          mv packages/*.deb ${{ github.workspace }}/ytnovote.deb
-
       - name: Clone and Build Gonerino
         if: inputs.gonerino == true && steps.cache_tweaks.outputs.cache_gonerino_hit != 'true'
         run: |
@@ -392,7 +385,15 @@ jobs:
           git clone --quiet --depth=1 https://github.com/mrdrvt99/YouFixPlaybackIssues.git
           cd YouFixPlaybackIssues/YouFixPlaybackIssues && make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless TARGET=iphone:clang:18.6
           mv packages/*.deb ${{ github.workspace }}/youfixplaybackissues.deb
-          
+
+      - name: Clone and Build PleaseDontStopTheMusic
+        if: inputs.pleasedontstopthemusic == true && steps.cache_tweaks.outputs.cache_pleasedontstopthemusic_hit != 'true'
+        run: |
+          git clone --quiet --depth=1 https://github.com/mikey820/PleaseDontStopTheMusic.git
+          cd PleaseDontStopTheMusic
+          make -C rootless clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless ARCHS=arm64
+          mv rootless/packages/*.deb ${{ github.workspace }}/pleasedontstopthemusic.deb
+
       - name: Upload Built Debs as Artifacts
         uses: actions/upload-artifact@v7
         with:
