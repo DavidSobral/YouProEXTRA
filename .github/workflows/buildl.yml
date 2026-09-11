@@ -47,8 +47,8 @@ on:
         type: boolean
 
       ytuhd:
-        description: "Integrate YTUHD"
-        default: true
+        description: "Integrate YTUHD(21.25.5+ incompatible)"
+        default: false
         required: false
         type: boolean
 
@@ -77,13 +77,13 @@ on:
         type: boolean
 
       ytweaks:
-        description: "Integrate YTweaks"
+        description: "Integrate YTweaks(20.10.4+)"
         default: true
         required: false
         type: boolean
         
       gonerino:
-        description: "Integrate Gonerino"
+        description: "Integrate Gonerino(19.42.1+)"
         default: false
         required: false
         type: boolean
@@ -101,13 +101,13 @@ on:
         type: boolean
 
       volumeboost:
-        description: "Integrate VolumeBoostYT"
+        description: "Integrate VolumeBoostYT(iOS16+)"
         default: false
         required: false
         type: boolean
 
       nativeshare:
-        description: "Integrate YTNativeShare"
+        description: "Integrate YTNativeShare(19.35.3+)"
         default: false
         required: false
         type: boolean
@@ -168,7 +168,7 @@ jobs:
         run: |
           brew uninstall --ignore-dependencies bicep || true
           brew untap aws/tap azure/bicep || true
-          brew install --quiet make ldid swiftlint dpkg meson ninja
+          brew install --quiet make ldid swiftlint dpkg meson ninja go
 
       - name: Set PATH Environment Variables
         run: |

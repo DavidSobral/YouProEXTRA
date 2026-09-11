@@ -91,12 +91,12 @@ YouTube IPA builder packed with customizable tweaks. Also Known as Youtubemaxxin
    <li><strong>Latest confirmed:</strong> 21.24.3</li>
   
   > [!WARNING]  
-  > - +21.25.5 version and newer are **not recommended**!  
+  > - +21.25.5 version and newer are **not recommended**!
   > - If you want a newer version, you can build it in the **Actions** tab.
 
   > [!NOTE]
   > - iOS14+ builds are now available on the releases page.
   
-   <li><strong>Date tested:</strong> Aug 10, 2026</li>
-   <li><strong>YouPro/YTLite/YTKP/YTKACE:</strong> 1.3.1/5.2.2/6.0/0.8.3</li>
+   <li><strong>Date tested:</strong> Sep 10, 2026</li>
+   <li><strong>YouPro/YTLite/YTKP/YTKACE:</strong> 1.3.1(21.24.3)/5.2.2/6.1/0.9.2</li>
 </ul>

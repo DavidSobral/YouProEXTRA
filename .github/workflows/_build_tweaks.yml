@@ -101,7 +101,7 @@ jobs:
         run: |
           brew uninstall --ignore-dependencies bicep || true
           brew untap aws/tap azure/bicep || true
-          brew install --quiet make ldid swiftlint dpkg meson ninja
+          brew install --quiet make ldid swiftlint dpkg meson ninja go
 
       - name: Set PATH Environment Variables
         run: |
