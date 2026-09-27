@@ -262,6 +262,7 @@ jobs:
         run: |
           git clone --quiet --depth=1 https://github.com/tonwalter888/youmod.git
           cd youmod
+          find Files -type f \( -name "*.h" -o -name "*.x" -o -name "*.m" \) -exec perl -pi -e 's/#import <roothide\.h>/#import <rootless.h>\n#define jbroot(path) ROOT_PATH_NS(path)/g' {} +
           echo "YOUMOD_VERSION=$(grep '^Version:' control 2>/dev/null | awk '{print $2}' || grep '^Version:' DEBIAN/control | awk '{print $2}')" >> $GITHUB_ENV
           make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
           mv packages/*.deb ${{ github.workspace }}/youmod.deb
