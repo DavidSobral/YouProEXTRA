@@ -148,7 +148,7 @@ runs:
         fi
 
         if [ "${{ inputs.volumeboost }}" = "true" ]; then
-          echo "volumeboost=$(get_hash VasirakCalgux/VolumeBoostYT)"                 >> $GITHUB_OUTPUT
+          echo "volumeboost=$(get_hash candyzp/VolumeBoostYT)"                       >> $GITHUB_OUTPUT
         else
           echo "volumeboost=disabled"                                                >> $GITHUB_OUTPUT
         fi

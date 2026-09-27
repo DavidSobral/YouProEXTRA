@@ -304,7 +304,7 @@ runs:
       id: cache_volumeboost
       with:
         path: ${{ github.workspace }}/volumeboost.deb
-        key: volumeboost-${{ inputs.volumeboost_commit }}-arm64-sdk${{ inputs.sdk_version }}
+        key: volumeboost-v1-${{ inputs.volumeboost_commit }}-arm64-sdk${{ inputs.sdk_version }}
 
     - uses: actions/cache@v6
       if: inputs.nativeshare == 'true'

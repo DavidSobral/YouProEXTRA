@@ -75,7 +75,7 @@ on:
         type: boolean
 
       gonerino:
-        description: "Integrate Gonerino(19.42.1+)"
+        description: "Integrate Gonerino(21.25.5+)"
         default: false
         required: false
         type: boolean
@@ -263,7 +263,7 @@ jobs:
           git clone --quiet --depth=1 https://github.com/itzzace/ytkace.git
           cd ytkace
           echo "YTKACE_VERSION=$(grep '^Version:' control 2>/dev/null | awk '{print $2}' || grep '^Version:' DEBIAN/control | awk '{print $2}')" >> $GITHUB_ENV
-          make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless ARCHS=arm64
+          make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
           mv packages/*.deb ${{ github.workspace }}/ytkace.deb
 
       - name: Clone and Build YouPiP
@@ -347,13 +347,13 @@ jobs:
         if: inputs.ythold == true && steps.cache_tweaks.outputs.cache_ythold_hit != 'true'
         run: |
           git clone --quiet --depth=1 https://github.com/joshuaseltzer/YTHoldForSpeed.git
-          cd YTHoldForSpeed && make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless ARCHS=arm64 TARGET=iphone:clang:18.6
+          cd YTHoldForSpeed && make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless ARCHS=arm64 TARGET=iphone:clang:18.6:14.0
           mv packages/*.deb ${{ github.workspace }}/ythold.deb
 
       - name: Clone and Build VolumeBoostYT
         if: inputs.volumeboost == true && steps.cache_tweaks.outputs.cache_volumeboost_hit != 'true'
         run: |
-          git clone --quiet --depth=1 https://github.com/VasirakCalgux/VolumeBoostYT.git
+          git clone --quiet --depth=1 https://github.com/candyzp/VolumeBoostYT.git
           cd VolumeBoostYT && make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless ARCHS=arm64
           mv packages/*.deb ${{ github.workspace }}/volumeboost.deb
 
