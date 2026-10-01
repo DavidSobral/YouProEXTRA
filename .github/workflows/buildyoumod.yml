@@ -1,15 +1,7 @@
-name: Build TubeLRD/DLTube IPA
+name: Build YouMod IPA
 on:
   workflow_dispatch:
     inputs:
-      tweak_choice:
-        description: "TubeLRD/DLTube"
-        required: true
-        type: choice
-        options:
-          - TubeLRD
-          - DLTube
-
       ipa_url:
         description: "URL to the decrypted IPA file"
         default: ""
@@ -32,7 +24,7 @@ on:
         description: "Integrate Open in YouTube (Safari Extension)"
         default: true
         required: false
-        type: boolean        
+        type: boolean
 
       demc:
         description: "Integrate DontEatMyContent"
@@ -81,9 +73,9 @@ on:
         default: true
         required: false
         type: boolean
-        
+
       gonerino:
-        description: "Integrate Gonerino(19.42.1+)"
+        description: "Integrate Gonerino(21.25.5+)"
         default: false
         required: false
         type: boolean
@@ -124,7 +116,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build TubeLRD/DLTube IPA
+    name: Build YouMod IPA
     runs-on: macos-15
     permissions:
       contents: write
@@ -137,7 +129,7 @@ jobs:
       - name: Hide Sensitive Inputs
         uses: levibostian/action-hide-sensitive-inputs@v1
         with:
-          exclude_inputs: tweak_choice,bundle_id,display_name,youpip,ytuhd,ryd,ytabconfig,youquality,ytweaks,gonerino,yougetcaption,demc,youchoose,ythold,volumeboost,nativeshare,opensafari,pleasedontstopthemusic
+          exclude_inputs: bundle_id,display_name,youpip,ytuhd,ryd,ytabconfig,youquality,gonerino,ytweaks,yougetcaption,demc,youchoose,ythold,volumeboost,nativeshare,opensafari,pleasedontstopthemusic
 
       - name: Download and Validate IPA
         run: |
@@ -163,7 +155,7 @@ jobs:
           volumeboost: ${{ inputs.volumeboost }}
           nativeshare: ${{ inputs.nativeshare }}
           pleasedontstopthemusic: ${{ inputs.pleasedontstopthemusic }}
-          
+
       - name: Install Dependencies
         run: |
           brew uninstall --ignore-dependencies bicep || true
@@ -197,7 +189,7 @@ jobs:
           chmod +x /usr/local/bin/tbd
 
       - name: Clone Open in YouTube (Safari Extension)
-        if: inputs.opensafari == true
+        if: inputs.opensafari == true  
         run: |
           git clone --quiet -n --depth=1 --filter=tree:0 https://github.com/BillyCurtis/OpenYouTubeSafariExtension.git
           cd OpenYouTubeSafariExtension
@@ -266,24 +258,14 @@ jobs:
           cd YTVideoOverlay && make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
           mv packages/*.deb ${{ github.workspace }}/ytvo.deb
 
-      - name: Checkout Base Tweak
-        uses: actions/checkout@v7
-        with:
-          repository: mrdrvt99/LRD-DLTube
-          ref: ${{ inputs.tweak_choice == 'TubeLRD' && 'main' || 'main1' }}
-          path: base_tweak
-          submodules: recursive
-
-      - name: Build Base Tweak
+      - name: Clone and Build YouMod
         run: |
-          cd base_tweak
-          echo "TWEAK_VERSION=$(grep '^Version:' DEBIAN/control | awk '{print $2}')" >> $GITHUB_ENV
-          chmod -R 755 .
-          if [ "${{ inputs.tweak_choice }}" = "TubeLRD" ]; then
-            dpkg-deb --root-owner-group -Zgzip --build . ${{ github.workspace }}/TubeLRD.deb
-          else
-            dpkg-deb --root-owner-group -Zgzip --build . ${{ github.workspace }}/DLTube.deb
-          fi
+          git clone --quiet --depth=1 https://github.com/tonwalter888/youmod.git
+          cd youmod
+          find Files -type f \( -name "*.h" -o -name "*.x" -o -name "*.m" \) -exec perl -pi -e 's/#import <roothide\.h>/#import <rootless.h>\n#define jbroot(path) ROOT_PATH_NS(path)/g' {} +
+          echo "YOUMOD_VERSION=$(grep '^Version:' control 2>/dev/null | awk '{print $2}' || grep '^Version:' DEBIAN/control | awk '{print $2}')" >> $GITHUB_ENV
+          make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
+          mv packages/*.deb ${{ github.workspace }}/youmod.deb
 
       - name: Clone and Build YouPiP
         if: inputs.youpip == true && steps.cache_tweaks.outputs.cache_youpip_hit != 'true'
@@ -366,13 +348,13 @@ jobs:
         if: inputs.ythold == true && steps.cache_tweaks.outputs.cache_ythold_hit != 'true'
         run: |
           git clone --quiet --depth=1 https://github.com/joshuaseltzer/YTHoldForSpeed.git
-          cd YTHoldForSpeed && make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless ARCHS=arm64 TARGET=iphone:clang:18.6
+          cd YTHoldForSpeed && make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless ARCHS=arm64 TARGET=iphone:clang:18.6:14.0
           mv packages/*.deb ${{ github.workspace }}/ythold.deb
 
       - name: Clone and Build VolumeBoostYT
         if: inputs.volumeboost == true && steps.cache_tweaks.outputs.cache_volumeboost_hit != 'true'
         run: |
-          git clone --quiet --depth=1 https://github.com/VasirakCalgux/VolumeBoostYT.git
+          git clone --quiet --depth=1 https://github.com/candyzp/VolumeBoostYT.git
           cd VolumeBoostYT && make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless ARCHS=arm64
           mv packages/*.deb ${{ github.workspace }}/volumeboost.deb
 
@@ -409,24 +391,24 @@ jobs:
           for f in *.deb; do
             [ -f "$f" ] && tweaks="$tweaks $f"
           done
-          cyan -i youtube.ipa -o YouTube_${{ inputs.tweak_choice }}_${{ env.YT_VERSION }}_${{ env.TWEAK_VERSION }}.ipa -uwesf $tweaks -n "${{ inputs.display_name }}" -b ${{ inputs.bundle_id }}
+          cyan -i youtube.ipa -o YouMod_${{ env.YT_VERSION }}_${{ env.YOUMOD_VERSION }}.ipa -uwesf $tweaks -n "${{ inputs.display_name }}" -b ${{ inputs.bundle_id }}
 
       - name: Create a Draft Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           i=1
-          while gh release view "yt-ipa${i}" --repo "$GITHUB_REPOSITORY" &>/dev/null; do
+          while gh release view "youmod-ipa${i}" --repo "$GITHUB_REPOSITORY" &>/dev/null; do
             i=$(( i + 1 ))
           done
-          gh release create "yt-ipa${i}" \
+          gh release create "youmod-ipa${i}" \
             --repo "$GITHUB_REPOSITORY" \
-            --title "YouTube_${{ inputs.tweak_choice }}_${{ env.YT_VERSION }}_${{ env.TWEAK_VERSION }}" \
+            --title "YouMod_${{ env.YT_VERSION }}_${{ env.YOUMOD_VERSION }}" \
             --draft \
-            YouTube_${{ inputs.tweak_choice }}_${{ env.YT_VERSION }}_${{ env.TWEAK_VERSION }}.ipa
+            YouMod_${{ env.YT_VERSION }}_${{ env.YOUMOD_VERSION }}.ipa
 
       - name: Job Summary - Build Complete
-        run: echo -e '### 🛠️ Build YouTube IPA Complete!' >> $GITHUB_STEP_SUMMARY
+        run: echo -e '### 🛠️ Build YouMod IPA Complete!' >> $GITHUB_STEP_SUMMARY
 
       - name: Job Summary - Output the Draft Release Link
         run: |

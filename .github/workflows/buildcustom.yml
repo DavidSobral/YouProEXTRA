@@ -46,8 +46,8 @@ on:
         type: boolean
 
       isponsorblock:
-        description: "Integrate iSponsorBlock"
-        default: true
+        description: "Integrate iSponsorBlock(21.25.5+ incompatible)"
+        default: false
         required: false
         type: boolean
 
@@ -100,7 +100,7 @@ on:
         type: boolean
 
       gonerino:
-        description: "Integrate Gonerino(19.42.1+)"
+        description: "Integrate Gonerino(21.25.5+)"
         default: false
         required: false
         type: boolean

@@ -35,7 +35,7 @@ on:
 
       ytuhd:
         description: "Integrate YTUHD(21.25.5+ incompatible)"
-        default: true
+        default: false
         required: false
         type: boolean
 
@@ -76,7 +76,7 @@ on:
         type: boolean
 
       gonerino:
-        description: "Integrate Gonerino(19.42.1+)"
+        description: "Integrate Gonerino(21.25.5+)"
         default: true
         required: false
         type: boolean
@@ -112,8 +112,8 @@ on:
         type: boolean
 
       isponsorblock:
-        description: "Integrate iSponsorBlock"
-        default: true
+        description: "Integrate iSponsorBlock(21.25.5+ incompatible)"
+        default: false
         required: false
         type: boolean
 
@@ -162,7 +162,7 @@ jobs:
 #     ythold: ${{ inputs.ythold }} //doesn't work with youpro
 #     nativeshare: ${{ inputs.nativeshare }} //doesn't work with youpro
       opensafari: ${{ inputs.opensafari }}
-#      pleasedontstopthemusic: ${{ inputs.pleasedontstopthemusic }}
+#     pleasedontstopthemusic: ${{ inputs.pleasedontstopthemusic }}
       
   package:
     name: Build YouPro IPA
