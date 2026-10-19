@@ -231,8 +231,11 @@ jobs:
         with:
           sparse-checkout: davidtube
           path: _dt
+          persist-credentials: false
 
       - name: Patch DavidTube logo into IPA
+        continue-on-error: true
+        timeout-minutes: 10
         run: |
           if [ -f _dt/davidtube/patch_ipa.sh ]; then
             sh _dt/davidtube/patch_ipa.sh youtube.ipa

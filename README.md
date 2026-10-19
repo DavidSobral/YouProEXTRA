@@ -108,3 +108,4 @@ This fork replaces the YouTube header wordmark with the DavidTube logo by patchi
 If anything goes wrong (patching or validation), the original logo is kept and the build continues.
 To resync with upstream: `git remote add upstream https://github.com/mrdrvt99/YouProEXTRA.git`, then `git fetch upstream && git merge upstream/main`.
 Besides this README, the only upstream file edited is `.github/workflows/buildyoupro.yml` (two added steps, `Checkout DavidTube` and `Patch DavidTube logo into IPA`); keep both on conflict.
+The logo is applied only by the **Build YouPro IPA** workflow (`buildyoupro.yml`), not by buildnoylite, buildcustom or any other workflow; the workflow edits are exactly those two steps.
