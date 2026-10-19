@@ -51,11 +51,9 @@ TEMPLATE_TAGS = [1001, 1003, 1004, 1006, 1007]
 LAYOUT_IMAGE = 12
 CELM, CBCK = b"MLEC", b"KCBC"  # u32 FourCCs 'CELM' and 'CBCK' as stored
 LZFSE = 4
-# CELM flags word.  Only one LZFSE rendition exists in the IPA (an opaque-looking
-# 1024pt icon, flags 3); every rendition carrying 2 or 3 looks like an opaque
-# photo/background, while icons and sprites with transparency carry 0.  Flags 3
-# made CoreUI draw our transparent pixels as opaque black on device, so use 0.
-CELM_FLAGS = 0
+# CELM flags word: 3 is the value of the only LZFSE rendition in the IPA.  0 was
+# tried and CoreUI then drew nothing at all (decode refused), so keep 3.
+CELM_FLAGS = 3
 LZ_RAW, LZ_END = b"bvx-", b"bvx$"
 
 
