@@ -2,47 +2,11 @@ import os
 import struct
 import unittest
 
-from davidtube.tests.fixtures import IDENT, SCALE, build_catalog
+from davidtube.tests.fixtures import (BITMAP_INFO, BYTES_PER_ROW, COMPOSITION, IDENT, METRICS,
+                                      SCALE, SLICES, build_catalog, make_csi, make_link_csi)
 from davidtube.tools.car import Car, CarError
 from davidtube.tools.csi import (build_image_csi, decode_image_payload, find_template,
                                  info_list, parse_csi_header, row_bytes)
-
-SLICES, METRICS, COMPOSITION, BITMAP_INFO, BYTES_PER_ROW, LINK = 1001, 1003, 1004, 1006, 1007, 1010
-
-
-def tlv(tag, data):
-    return struct.pack("<II", tag, len(data)) + data
-
-
-def make_csi(width=20, height=10, scale100=200, name=b"tmpl@2x.png", pixel_format=b"BGRA",
-             layout=12, flags=0x10, entries=None, payload=None):
-    """A CSI modelled on the real standalone renditions of the target catalog."""
-    if entries is None:
-        entries = [tlv(SLICES, struct.pack("<5I", 1, 0, 0, width, height)),
-                   tlv(METRICS, struct.pack("<7I", 1, 0, 0, 0, 0, width, height)),
-                   tlv(COMPOSITION, struct.pack("<If", 0, 1.0)),
-                   tlv(BITMAP_INFO, struct.pack("<I", 1)),
-                   tlv(BYTES_PER_ROW, struct.pack("<I", (width * 4 + 31) // 32 * 32))]
-    if payload is None:  # DeepMap2-style CELM (compression 11), opaque data
-        data = b"\x01\x00\x00\x00\x04\x00\x00\x00" + b"\xAB" * 40
-        payload = b"MLEC" + struct.pack("<III", 0, 11, len(data)) + data
-    infos = b"".join(entries)
-    head = b"ISTC" + struct.pack("<IIIII", 1, flags, width, height, scale100)
-    head += pixel_format + struct.pack("<IIHH", 1, 0, layout, 0)
-    head += name.ljust(128, b"\0")
-    head += struct.pack("<IIII", len(infos), 1, 0, len(payload))
-    assert len(head) == 184
-    return head + infos + payload
-
-
-def make_link_csi(width=244, height=96):
-    link = b"KLNI" + struct.pack("<IIIIIII", 0, 2, 100, width, height, 0, 0)
-    entries = [tlv(SLICES, struct.pack("<5I", 1, 0, 0, width, height)),
-               tlv(METRICS, struct.pack("<7I", 1, 0, 0, 0, 0, width, height)),
-               tlv(LINK, link), tlv(COMPOSITION, struct.pack("<If", 0, 1.0)),
-               tlv(BITMAP_INFO, struct.pack("<I", 1))]
-    return make_csi(width, height, layout=1003, name=b"youtube_logo@2x.png",
-                    entries=entries, payload=b"")
 
 
 def pixels(w, h):
