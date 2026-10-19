@@ -36,3 +36,15 @@ def make_fake_assetutil(directory, script_body=None, lister_extra=""):
         f.write(script_body)
     os.chmod(path, os.stat(path).st_mode | stat.S_IXUSR)
     return path
+
+
+def full_listing(extra=()):
+    """A plausible assetutil listing: header, all 8 real targets x 3 scales, other entries."""
+    from davidtube.tools.patch_car import SCALES, TARGETS
+    out = [{"AssetType": "Header", "Version": 7}]
+    for n in TARGETS:
+        for sc in SCALES:
+            out.append({"Name": n, "Scale": sc, "PixelWidth": 100 * sc, "PixelHeight": 20 * sc,
+                        "SizeOnDisk": 50})
+    out.append({"Name": "ic_x", "Scale": 3, "PixelWidth": 6, "PixelHeight": 6, "SizeOnDisk": 10})
+    return out + list(extra)

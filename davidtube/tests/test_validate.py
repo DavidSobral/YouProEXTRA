@@ -5,12 +5,13 @@ import sys
 import tempfile
 import unittest
 
-from davidtube.tests.helpers import ROOT, make_fake_assetutil
+from davidtube.tests.helpers import ROOT, full_listing, make_fake_assetutil
 from davidtube.tools import validate_car
+from davidtube.tools.patch_car import TARGETS
 from davidtube.tools.validate_car import compare_listings
 
 SCRIPT = os.path.join(ROOT, "davidtube", "tools", "validate_car.py")
-T = {"youtube_logo", "youtube_logo_dark"}
+T = {"youtube_logo"}
 
 
 def e(name, scale=2, w=10, h=4, **kw):
@@ -28,6 +29,34 @@ def cp(x):
 
 
 class CompareTests(unittest.TestCase):
+    def test_empty_listing_is_a_difference(self):
+        self.assertTrue(compare_listings([], [], T))
+
+    def test_header_only_listing_is_a_difference(self):
+        self.assertTrue(compare_listings([HEADER], [HEADER], T))
+
+    def test_missing_target_facet_named(self):
+        full = full_listing()
+        o = [x for x in full if x.get("Name") != "youtube_premium_logo"]
+        d = compare_listings(o, o, set(TARGETS))
+        self.assertTrue(any("youtube_premium_logo" in x for x in d), d)
+        self.assertFalse(any("youtube_logo_dark" in x for x in d), d)
+
+    def test_patched_missing_target_named(self):
+        full = full_listing()
+        p = [x for x in full if x.get("Name") != "youtube_logo_cairo"]
+        d = compare_listings(full, p, set(TARGETS))
+        self.assertTrue(any("youtube_logo_cairo" in x for x in d), d)
+
+    def test_two_scales_only_is_a_difference(self):
+        full = full_listing()
+        o = [x for x in full if not (x.get("Name") == "youtube_logo" and x["Scale"] == 3)]
+        d = compare_listings(o, o, set(TARGETS))
+        self.assertTrue(any("youtube_logo" in x and "scale" in x for x in d), d)
+
+    def test_full_real_listing_ok(self):
+        self.assertEqual(compare_listings(full_listing(), full_listing(), set(TARGETS)), [])
+
     def test_identical(self):
         self.assertEqual(compare_listings(BASE, cp(BASE), T), [])
 
@@ -112,7 +141,8 @@ class CliTests(unittest.TestCase):
         self.a = os.path.join(self.tmp.name, "a.car")
         self.b = os.path.join(self.tmp.name, "b.car")
         for p in (self.a, self.b):
-            open(p, "wb").write(b"x")
+            with open(p, "wb") as f:
+                f.write(b"x")
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -129,19 +159,31 @@ class CliTests(unittest.TestCase):
         make_fake_assetutil(self.bin, body)
 
     def test_ok(self):
-        p = cp(BASE)
+        base = full_listing()
+        p = cp(base)
         p[1]["SizeOnDisk"] = 5
-        self.fake(BASE, p)
+        self.fake(base, p)
         r = self.run_cli(self.a, self.b)
         self.assertEqual((r.returncode, r.stdout.strip()), (0, "OK"))
 
     def test_differences_exit_1(self):
-        p = cp(BASE)
-        p[3]["SizeOnDisk"] = 5
-        self.fake(BASE, p)
+        base = full_listing()
+        p = cp(base)
+        p[-1]["SizeOnDisk"] = 5
+        self.fake(base, p)
         r = self.run_cli(self.a, self.b)
         self.assertEqual(r.returncode, 1)
         self.assertIn("ic_x", r.stdout)
+
+    def test_empty_listing_exit_1(self):
+        self.fake([], [])
+        r = self.run_cli(self.a, self.b)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("no entry for youtube_logo", r.stdout)
+
+    def test_header_only_exit_1(self):
+        self.fake([HEADER], [HEADER])
+        self.assertEqual(self.run_cli(self.a, self.b).returncode, 1)
 
     def test_garbage_exit_1(self):
         make_fake_assetutil(self.bin, "#!/bin/sh\necho 'not json at all'\n")
@@ -152,7 +194,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(self.run_cli(self.a, self.b).returncode, 1)
 
     def test_leading_warning_line_tolerated(self):
-        body = '#!/bin/sh\necho "warning: something"\ncat <<\'EOF\'\n%s\nEOF\n' % json.dumps(BASE)
+        body = '#!/bin/sh\necho "warning: something"\ncat <<\'EOF\'\n%s\nEOF\n' % json.dumps(full_listing())
         make_fake_assetutil(self.bin, body)
         r = self.run_cli(self.a, self.b)
         self.assertEqual((r.returncode, r.stdout.strip()), (0, "OK"))

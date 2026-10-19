@@ -28,7 +28,7 @@ if __name__ == "__main__":  # run as a script under -I: make `davidtube` importa
     if _ROOT not in sys.path:
         sys.path.append(_ROOT)
 
-from davidtube.tools.patch_car import TARGETS  # noqa: E402
+from davidtube.tools.patch_car import SCALES, TARGETS  # noqa: E402
 
 KEEP_KEYS = ("Name", "Scale", "PixelWidth", "PixelHeight")
 EXIT_NO_ASSETUTIL = 3
@@ -83,14 +83,33 @@ def _shape(e):
     return tuple(e.get(k) for k in KEEP_KEYS)
 
 
+def _check_targets(listing, targets, which, out):
+    """Every target must be listed (>= 1 entry); for the real TARGETS set, with 3 scales."""
+    scales = {}
+    for e in listing:
+        if isinstance(e, dict) and isinstance(e.get("Name"), str) and _base(e["Name"]) in targets:
+            scales.setdefault(_base(e["Name"]), set()).add(e.get("Scale"))
+    for name in sorted(targets):
+        got = scales.get(name)
+        if not got:
+            out.append("assetutil listing shows no entry for %s (%s catalog)" % (name, which))
+        elif set(targets) == set(TARGETS) and len(got) < len(SCALES):
+            out.append("assetutil listing shows only %d scale(s) for %s (%s catalog)"
+                       % (len(got), name, which))
+
+
 def compare_listings(orig, patched, targets):
     """Unexpected differences between two assetutil listings (empty list = OK).
 
+    Both listings must contain every target (an empty or unrecognised listing
+    is a difference, so nothing is ever "validated" without being checked).
     Target entries (Name, minus a `.png` suffix, in `targets`) may change in any
     way except that each original one must remain, with the same Name, Scale,
     PixelWidth and PixelHeight (only keys present in the original entry are
     compared).  Everything else must be identical and equally numerous."""
     out = []
+    _check_targets(orig, targets, "original", out)
+    _check_targets(patched, targets, "patched", out)
     po, to, no = _group(orig, targets)
     pp, tp, np_ = _group(patched, targets)
     _diff_multiset(no, np_, "header/unnamed entries", out)
