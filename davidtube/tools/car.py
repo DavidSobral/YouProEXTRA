@@ -89,11 +89,15 @@ class Car:
         _, root, _, _, _ = _unpack(">IIIIB", t, 4)
         n, seen = root, set()
         while True:  # descend to the first leaf
+            if n in seen:
+                raise CarError("cycle in %s" % var)
+            seen.add(n)
             b = self.block(n)
             leaf, _, _, _ = _unpack(">HHII", b)
             if leaf:
                 break
             n = _unpack(">I", b, 12)[0]
+        seen.clear()
         out = []
         while n:
             if n in seen:

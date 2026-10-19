@@ -54,6 +54,49 @@ class CarTests(unittest.TestCase):
         with self.assertRaises(CarError):
             self.car.block(9999)
 
+    def _rend_nodes(self):
+        tree = self.car.block(self.car._var("RENDITIONS"))
+        root = struct.unpack(">I", tree[8:12])[0]
+        first = struct.unpack(">I", self.car.block(root)[12:16])[0]
+        second = struct.unpack(">I", self.car.block(first)[4:8])[0]  # forward link
+        return root, first, second
+
+    def _patched(self, idx, data):
+        self.car.replace_block(idx, data)
+        return Car(self.car.to_bytes())
+
+    def test_internal_self_cycle(self):
+        root, _, _ = self._rend_nodes()
+        car = self._patched(root, struct.pack(">HHII", 0, 1, 0, 0) + struct.pack(">II", root, 0))
+        with self.assertRaises(CarError):
+            car.renditions()
+
+    def test_internal_two_node_cycle(self):
+        root, first, _ = self._rend_nodes()
+        self.car.replace_block(first, struct.pack(">HHII", 0, 1, 0, 0) + struct.pack(">II", root, 0))
+        car = Car(self.car.to_bytes())
+        with self.assertRaises(CarError):
+            car.renditions()
+
+    def test_leaf_forward_cycle(self):
+        _, first, second = self._rend_nodes()
+        blk = bytearray(self.car.block(second))
+        struct.pack_into(">I", blk, 4, first)
+        car = self._patched(second, bytes(blk))
+        with self.assertRaises(CarError):
+            car.renditions()
+
+    def test_bad_keyformat_magic(self):
+        kf = self.car._var("KEYFORMAT")
+        car = self._patched(kf, b"XXXX" + self.car.block(kf)[4:])
+        with self.assertRaises(CarError):
+            car.renditions()
+
+    def test_replace_block_bounds(self):
+        for i in (0, -1, 9999):
+            with self.assertRaises(CarError):
+                self.car.replace_block(i, b"x")
+
     @unittest.skipUnless(os.environ.get("DAVIDTUBE_REAL_CAR"), "set DAVIDTUBE_REAL_CAR")
     def test_real_catalog(self):
         with open(os.environ["DAVIDTUBE_REAL_CAR"], "rb") as fh:
