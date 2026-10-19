@@ -1,4 +1,5 @@
 import os
+import shutil
 import stat
 import subprocess
 import sys
@@ -62,6 +63,22 @@ class WrapperTests(unittest.TestCase):
         self.assertIn("youtube_logo", names)
         self.assertEqual(stat.S_IMODE(os.stat(self.ipa).st_mode), 0o640)
         self.assertEqual(self.leftovers(), [])
+
+    def test_checkout_layout(self):
+        """As in CI: script in <ws>/_dt/davidtube, IPA at <ws>/youtube.ipa, cwd = workspace."""
+        ws = os.path.join(self.tmp.name, "ws")
+        os.makedirs(os.path.join(ws, "_dt"))
+        shutil.copytree(os.path.join(ROOT, "davidtube"), os.path.join(ws, "_dt", "davidtube"),
+                        ignore=shutil.ignore_patterns("__pycache__", "tests"))
+        shutil.copy(self.ipa, os.path.join(ws, "youtube.ipa"))
+        make_fake_assetutil(self.bin)
+        env = dict(os.environ, DAVIDTUBE_PYTHON=sys.executable, RUNNER_TEMP=self.tmp.name,
+                   PATH=self.bin + os.pathsep + "/usr/bin:/bin")
+        r = subprocess.run(["sh", "_dt/davidtube/patch_ipa.sh", "youtube.ipa"], env=env, cwd=ws,
+                           capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("::notice::DavidTube logo patched into IPA", r.stdout)
+        self.assertNotEqual(read(os.path.join(ws, "youtube.ipa")), self.orig)
 
     def test_assetutil_missing_keeps_ipa(self):
         r = self.run_sh(with_assetutil=False)

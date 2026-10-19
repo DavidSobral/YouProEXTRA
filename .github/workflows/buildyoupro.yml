@@ -225,8 +225,20 @@ jobs:
         run: |
           pipx install --force https://github.com/asdfzxcvbn/pyzule-rw/archive/main.zip
 
+      - name: Checkout DavidTube
+        uses: actions/checkout@v7
+        continue-on-error: true
+        with:
+          sparse-checkout: davidtube
+          path: _dt
+
       - name: Patch DavidTube logo into IPA
-        run: sh davidtube/patch_ipa.sh youtube.ipa
+        run: |
+          if [ -f _dt/davidtube/patch_ipa.sh ]; then
+            sh _dt/davidtube/patch_ipa.sh youtube.ipa
+          else
+            echo "::warning::DavidTube logo: checkout failed, logo not applied"
+          fi
 
       - name: Inject Tweaks Into IPA
         run: |

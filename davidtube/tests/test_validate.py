@@ -151,6 +151,12 @@ class CliTests(unittest.TestCase):
         make_fake_assetutil(self.bin, "#!/bin/sh\necho '[]'\nexit 4\n")
         self.assertEqual(self.run_cli(self.a, self.b).returncode, 1)
 
+    def test_leading_warning_line_tolerated(self):
+        body = '#!/bin/sh\necho "warning: something"\ncat <<\'EOF\'\n%s\nEOF\n' % json.dumps(BASE)
+        make_fake_assetutil(self.bin, body)
+        r = self.run_cli(self.a, self.b)
+        self.assertEqual((r.returncode, r.stdout.strip()), (0, "OK"))
+
     def test_not_a_list_exit_1(self):
         make_fake_assetutil(self.bin, "#!/bin/sh\necho '{}'\n")
         self.assertEqual(self.run_cli(self.a, self.b).returncode, 1)

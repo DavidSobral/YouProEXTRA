@@ -166,7 +166,7 @@ def _verify_catalog(data, out, expected):
             raise CarError("verify: %s decoded pixels differ" % name)
 
 
-def _find_car(infos):
+def find_car(infos):
     exact = [i for i in infos if i.filename == CAR_PATH]
     found = exact or [i for i in infos if _CAR_RE.match(i.filename)]
     if not found:
@@ -174,6 +174,9 @@ def _find_car(infos):
     if len(found) > 1:
         raise CarError("more than one Innertube_Resources.bundle/Assets.car in the IPA")
     return found[0]
+
+
+_find_car = find_car  # old name
 
 
 def _strip_zip64(extra):
@@ -253,7 +256,7 @@ def _install(tmp, ipa_in, ipa_out):
 def _patch_ipa(ipa_in, ipa_out):
     with zipfile.ZipFile(ipa_in) as zin:
         infos = zin.infolist()
-        car_info = _find_car(infos)
+        car_info = find_car(infos)
         patched = patch_catalog(zin.read(car_info))
         tmp = _temp_beside(ipa_out)
         try:

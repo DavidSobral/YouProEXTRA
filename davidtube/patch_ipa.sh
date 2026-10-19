@@ -43,7 +43,7 @@ main() {
         py=$DAVIDTUBE_PYTHON
     else
         py="$WORK/venv/bin/python"
-        if ! python3 -m venv "$WORK/venv" || ! "$py" -m pip install --quiet pillow; then
+        if ! python3 -m venv "$WORK/venv" || ! "$py" -m pip install --quiet "pillow>=10,<13"; then
             warn "cannot install Pillow, IPA left unchanged"
             return 0
         fi
@@ -55,9 +55,11 @@ main() {
         return 0
     fi
 
+    vpy=${DAVIDTUBE_PYTHON:-python3}
+
     # 3. extract both catalogs
-    if ! python3 -I "$VALIDATOR" --extract "$ipa" "$WORK/orig.car" ||
-        ! python3 -I "$VALIDATOR" --extract "$WORK/out.ipa" "$WORK/patched.car"; then
+    if ! "$vpy" -I "$VALIDATOR" --extract "$ipa" "$WORK/orig.car" ||
+        ! "$vpy" -I "$VALIDATOR" --extract "$WORK/out.ipa" "$WORK/patched.car"; then
         warn "cannot extract Assets.car, IPA left unchanged"
         return 0
     fi
@@ -67,7 +69,7 @@ main() {
     fi
 
     # 4. validate with assetutil
-    python3 -I "$VALIDATOR" "$WORK/orig.car" "$WORK/patched.car" >"$WORK/validate.log" 2>&1
+    "$vpy" -I "$VALIDATOR" "$WORK/orig.car" "$WORK/patched.car" >"$WORK/validate.log" 2>&1
     rc=$?
     case $rc in
     0) ;;

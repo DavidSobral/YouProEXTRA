@@ -122,7 +122,9 @@ def _listing(car):
     if proc.returncode != 0:
         raise ValueError("assetutil exited %d on %s" % (proc.returncode, car))
     try:
-        data = json.loads(proc.stdout.decode("utf-8"))
+        text = proc.stdout.decode("utf-8")
+        start = text.index("[")  # tolerate leading non-JSON warning lines
+        data, _ = json.JSONDecoder().raw_decode(text, start)
     except ValueError:
         raise ValueError("assetutil printed non-JSON for %s" % car)
     if not isinstance(data, list):
@@ -132,9 +134,9 @@ def _listing(car):
 
 def _extract(ipa, dest):
     import zipfile
-    from davidtube.tools.patch_car import _find_car
+    from davidtube.tools.patch_car import find_car
     with zipfile.ZipFile(ipa) as z:
-        info = _find_car(z.infolist())
+        info = find_car(z.infolist())
         with z.open(info) as src, open(dest, "wb") as dst:
             shutil.copyfileobj(src, dst, 1 << 20)
 
