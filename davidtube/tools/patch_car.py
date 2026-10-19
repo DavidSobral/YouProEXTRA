@@ -237,9 +237,10 @@ def _temp_beside(path):
 
 
 def _unlink(path):
+    """Best-effort cleanup: never raises, so the original error is what surfaces."""
     try:
         os.unlink(path)
-    except FileNotFoundError:
+    except OSError:
         pass
 
 
@@ -285,10 +286,7 @@ def _atomic_copy(ipa_in, ipa_out):
     except BaseException:
         if tmp:
             _unlink(tmp)
-        try:
-            _unlink(ipa_out)  # a stale or partial OUT must not be used by the build
-        except Exception:
-            pass
+        _unlink(ipa_out)  # a stale or partial OUT must not be used by the build
         raise
 
 

@@ -361,6 +361,67 @@ class PatchIpaTests(unittest.TestCase):
         self.assertNotEqual(targets[0], self.dst)  # copied to a temp file beside OUT
         self.assertEqual(os.path.dirname(targets[0]), self.tmp.name)
 
+    def temp_unlink_fails(self):
+        real = os.unlink
+
+        def unlink(path, *a, **kw):
+            if os.path.basename(path).startswith(".davidtube-"):
+                raise PermissionError(13, "Permission denied", path)
+            return real(path, *a, **kw)
+        return mock.patch.object(os, "unlink", unlink)
+
+    def test_temp_cleanup_failure_in_copy(self):
+        with open(self.dst, "wb") as f:
+            f.write(b"stale output of an earlier run")
+        write_ipa(self.src, None)
+
+        def enospc(src, dst):
+            raise OSError(28, "No space left on device")
+
+        with self.temp_unlink_fails(), mock.patch.object(patch_car, "_copy_bytes", enospc):
+            ok, out = self.run_patch()
+        self.assertFalse(ok)
+        self.assertIn("::error::", out)
+        self.assertIn("No space left on device", out)  # the original reason
+        self.assertNotIn("Permission denied", out)
+        self.assertFalse(os.path.exists(self.dst))  # stale OUT still removed
+
+    def test_temp_cleanup_failure_in_patch(self):
+        write_ipa(self.src, self.car)
+        with self.temp_unlink_fails(), mock.patch.object(
+                patch_car, "_verify_ipa", side_effect=CarError("verify: boom")):
+            ok, out = self.run_patch()
+        self.assert_untouched(ok, out)  # fallback still ran
+        self.assertIn("verify: boom", out)
+        self.assertNotIn("Permission denied", out)
+
+    def test_same_file_copy_failure_keeps_input(self):
+        bad = b"PK not really a zip" * 10
+        alias_dir = os.path.join(self.tmp.name, "sub")
+        os.mkdir(alias_dir)
+        hard = os.path.join(self.tmp.name, "hard.ipa")
+        spellings = [lambda: self.src,
+                     lambda: os.path.join(alias_dir, "..", "in.ipa"),
+                     lambda: os.path.relpath(self.src),
+                     lambda: hard]
+
+        def broken(src, dst):
+            raise OSError(28, "No space left on device")
+
+        for n, out_path in enumerate(spellings):
+            with self.subTest(n):
+                with open(self.src, "wb") as f:
+                    f.write(bad)
+                if os.path.exists(hard):
+                    os.unlink(hard)
+                os.link(self.src, hard)
+                with mock.patch.object(patch_car, "_copy_bytes", broken):
+                    ok, out = self.run_patch(self.src, out_path())
+                self.assertFalse(ok)
+                self.assertIn("::warning::", out)
+                with open(self.src, "rb") as f:
+                    self.assertEqual(f.read(), bad)
+
     def test_fallback_replaces_stale_output(self):
         with open(self.dst, "wb") as f:
             f.write(b"stale output of an earlier run" * 1000)
