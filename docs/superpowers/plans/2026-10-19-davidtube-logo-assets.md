@@ -18,6 +18,7 @@
 - Variant: names containing `dark` or ending `_white` → white-text logo (`davidtube_fundo_escuro.svg`); all others → `#111111`-text logo (`davidtube_fundo_claro.svg`).
 - Output renditions are exactly the original link rendition's `width × height` pixels (e.g. `youtube_logo` 122×48 / 244×96 / 366×144; `youtube_premium_logo*` 129×48 / 258×96 / 387×144), BGRA, transparent background, logo contain-fit and centered.
 - BOM and CAR parsing: BOM container fields are big-endian; CAR/CSI/KEYFORMAT/facet-token fields are little-endian; tree leaves are reached by descending to the first leaf and following `forward` links.
+- Standalone renditions use CELM compression type 4 (LZFSE as uncompressed `bvx-` blocks), chunks of height/3 rows, row stride ceil32(width*4) — evidence-based deviation from the original ZIP idea (no type 0/2 exists in the real catalogs); the rendition name is copied verbatim from the original link CSI (e.g. `youtube_logo.png` at 1x, `youtube_logo@2x.png` at 2x).
 - Untouched blocks stay byte-identical; patched blocks are appended at the end of the file and the block-index entry updated.
 - Fail-safe: any parse/validation error → output IPA is the unmodified input, `::warning::` printed, exit code 0. Never ship an unvalidated catalog.
 - Python is run as `python3 -I`; tests as `python3 -m unittest discover -s davidtube/tests` from the repo root.

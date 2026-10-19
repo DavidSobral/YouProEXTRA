@@ -30,14 +30,14 @@ A Python tool `davidtube/tools/patch_car.py` edits `Assets.car`, and
 `davidtube/patch_ipa.sh` wraps it for the workflow:
 1. Unzip `Assets.car` from the IPA, parse the BOM (block index, `FACETKEYS`, `KEYFORMAT`, `RENDITIONS` tree).
 2. For each target facet and each scale (24 renditions: 8 facets × @1x/@2x/@3x), take the existing link CSI and replace it with a **standalone image CSI** carrying DavidTube pixels. The atlas renditions (compression type 11, Apple's proprietary DeepMap2, which cannot be re-encoded) are never touched.
-3. The standalone CSI is built from a template: an existing non-linked BGRA image rendition of the same catalog provides the header/info-list layout; width, height, scale and name are set for the target; the payload is a `CELM` block with ZIP (zlib) compression of premultiplied BGRA pixels, sized exactly as the original link CSI's width × height.
+3. The standalone CSI is built from a template: an existing non-linked BGRA image rendition of the same catalog provides the header/info-list layout; width, height, scale and name are set for the target; the payload is a `CELM` block, compression type 4 (LZFSE, written as uncompressed LZFSE `bvx-` blocks so no compressor is needed), chunked `height/3` rows with a row stride of `ceil32(width*4)` (as in every real LZFSE rendition of the catalog, entry 1007 of the info list), pixels premultiplied BGRA, sized exactly as the original link CSI's width × height. The rendition name is copied verbatim from the original link CSI.
 4. The new CSI bytes are appended to the end of the file and the target's block-index entry (address, length) is updated. The RENDITIONS and FACETKEYS trees, the key format and every other block stay byte-identical.
 5. Variant: `*_dark*` and `*_white` facets get the white-text logo; the others get the `#111111`-text logo. The logo is contain-fit and centered on a transparent canvas of the original rendition's size.
 6. Write the patched `Assets.car` back into the IPA.
 One step in `.github/workflows/buildyoupro.yml`, before `Inject Tweaks Into IPA`, runs the script. It can be added to `buildnoylite.yml` and `buildcustom.yml` later (one line each).
 
 ## Safety (a corrupt catalog crashes the app at launch)
-- The tool re-parses its own output and checks: same block count, every untouched block byte-identical, all 612 facets still present, patched renditions decode (zlib) to the expected pixels.
+- The tool re-parses its own output and checks: same block count, every untouched block byte-identical, all 612 facets still present, patched renditions decode (LZFSE) to the expected pixels.
 - On the macOS runner it also runs `assetutil --info` on the patched catalog and compares the facet/rendition listing with the original; any difference outside the patched facets fails the check.
 - If any check fails, the step emits `::warning::` and leaves the IPA untouched; the build still succeeds (without the logo). A broken catalog is never shipped.
 - If the facet names are not found (YouTube renamed them), the step warns and does nothing.
