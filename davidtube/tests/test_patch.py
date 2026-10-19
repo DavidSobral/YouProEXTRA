@@ -156,6 +156,69 @@ class PatchCatalogTests(unittest.TestCase):
             with self.assertRaises(CarError):
                 patch_catalog(self.data)
 
+    def test_wrong_scale_detected(self):
+        real = patch_car.build_image_csi
+        with mock.patch.object(patch_car, "build_image_csi",
+                               lambda t, n, w, h, s, b: real(t, n, w, h, s + 100, b)):
+            with self.assertRaisesRegex(CarError, "size/scale"):
+                patch_catalog(self.data)
+
+    def test_wrong_size_detected(self):
+        # Swapped width/height: same pixel bytes, so only the size check can see it.
+        real = patch_car.build_image_csi
+        with mock.patch.object(patch_car, "build_image_csi",
+                               lambda t, n, w, h, s, b: real(t, n, h, w, s, b)):
+            with self.assertRaisesRegex(CarError, "size/scale"):
+                patch_catalog(self.data)
+
+    def test_blocks_not_reappended_detected(self):
+        # Second run whose replace_block silently does nothing: the old patched
+        # blocks would pass every content check, so only the tail check sees it.
+        with mock.patch.object(Car, "replace_block", lambda car, i, data: None):
+            with self.assertRaisesRegex(CarError, "appended tail"):
+                patch_catalog(self.out)
+
+    def test_overlapping_blocks_detected(self):
+        real = Car.replace_block
+        first = []
+
+        def overlap(car, i, data):
+            real(car, i, data)
+            if not first:
+                first.append(i)
+            elif len(first) == 1:  # point the second block into the first one
+                first.append(i)
+                e = car._index_off + 4 + 8 * i
+                a = int.from_bytes(car._buf[car._index_off + 4 + 8 * first[0]:][:4], "big")
+                car._buf[e:e + 4] = (a + 1).to_bytes(4, "big")
+
+        with mock.patch.object(Car, "replace_block", overlap):
+            with self.assertRaisesRegex(CarError, "overlapping"):
+                patch_catalog(self.data)
+
+    def _altered_on_output(self, method, alter):
+        real = getattr(Car, method)
+        size = len(self.data)
+
+        def fake(car):
+            value = real(car)
+            return alter(value) if len(car.to_bytes()) > size else value
+        return mock.patch.object(Car, method, fake)
+
+    def test_facet_change_detected(self):
+        def alter(facets):
+            facets["youtube_logo"] = {**facets["youtube_logo"], 2: 999}
+            return facets
+
+        with self._altered_on_output("facets", alter):
+            with self.assertRaisesRegex(CarError, "facets changed"):
+                patch_catalog(self.data)
+
+    def test_rendition_change_detected(self):
+        with self._altered_on_output("renditions", lambda rs: rs[:-1]):
+            with self.assertRaisesRegex(CarError, "rendition keys changed"):
+                patch_catalog(self.data)
+
     def test_collateral_damage_detected(self):
         real = Car.to_bytes
         victim = Car(self.data).renditions()[-1].value_block  # a non-target block
@@ -265,10 +328,112 @@ class PatchIpaTests(unittest.TestCase):
         self.assertIn("boom", out)
 
     def test_missing_input_never_raises(self):
+        with open(self.dst, "wb") as f:
+            f.write(b"stale output of an earlier run")
         ok, out = self.run_patch(src=os.path.join(self.tmp.name, "nope.ipa"))
         self.assertFalse(ok)
-        self.assertIn("::warning::DavidTube logo: ", out)
+        self.assertIn("::error::DavidTube logo: ", out)
+        self.assertNotIn("::warning::", out)
+        self.assertEqual(os.listdir(self.tmp.name), [])  # stale OUT removed
+
+    def test_copy_fails_midway(self):
+        with open(self.dst, "wb") as f:
+            f.write(b"stale output of an earlier run")
+        write_ipa(self.src, None)
+
+        targets = []
+
+        def half_then_enospc(src, dst):
+            targets.append(dst)
+            with open(self.dst, "rb") as f:  # OUT itself is never written partially
+                self.assertEqual(f.read(), b"stale output of an earlier run")
+            with open(src, "rb") as a, open(dst, "wb") as b:
+                b.write(a.read()[:300])
+            raise OSError(28, "No space left on device")
+
+        with mock.patch.object(patch_car, "_copy_bytes", half_then_enospc):
+            ok, out = self.run_patch()
+        self.assertFalse(ok)
+        self.assertIn("::error::DavidTube logo: ", out)
+        self.assertIn("No space left on device", out)
+        self.assertEqual(os.listdir(self.tmp.name), ["in.ipa"])  # no temp, no partial OUT
+        self.assertEqual(len(targets), 1)
+        self.assertNotEqual(targets[0], self.dst)  # copied to a temp file beside OUT
+        self.assertEqual(os.path.dirname(targets[0]), self.tmp.name)
+
+    def test_fallback_replaces_stale_output(self):
+        with open(self.dst, "wb") as f:
+            f.write(b"stale output of an earlier run" * 1000)
+        write_ipa(self.src, None)
+        self.assert_untouched(*self.run_patch())
+
+    def test_permission_bits_copied(self):
+        for car, patched in ((self.car, True), (None, False)):
+            write_ipa(self.src, car)
+            for mode in (0o644, 0o640):
+                os.chmod(self.src, mode)
+                self.assertEqual(self.run_patch()[0], patched)
+                self.assertEqual(os.stat(self.dst).st_mode & 0o7777, mode)
+
+    def test_in_place_missing_input(self):
+        path = os.path.join(self.tmp.name, "nope.ipa")
+        ok, out = self.run_patch(path, path)
+        self.assertFalse(ok)
+        self.assertIn("::error::", out)
         self.assertEqual(os.listdir(self.tmp.name), [])
+
+    def rewrite(self, fn):
+        """A _write_ipa that writes correctly, then rewrites the zip through fn."""
+        real = patch_car._write_ipa
+
+        def writer(zin, infos, car_info, patched, path):
+            real(zin, infos, car_info, patched, path)
+            with zipfile.ZipFile(path) as z:
+                items = [(i, z.read(i)) for i in z.infolist()]
+            with zipfile.ZipFile(path, "w") as z:
+                for i, d in items:
+                    r = fn(i, d)
+                    if r:
+                        z.writestr(*r)
+        return writer
+
+    def test_ipa_verification(self):
+        plist = "Payload/YouTube.app/Info.plist"
+        binary = "Payload/YouTube.app/YouTube"
+
+        def stored(i):
+            i.compress_type = zipfile.ZIP_STORED
+            return i
+
+        last = "Payload/YouTube.app/_CodeSignature/CodeResources"
+
+        def renamed(i):
+            i.filename = last + "2"
+            return i
+
+        def mode(i):
+            i.external_attr ^= 0o1 << 16
+            return i
+
+        cases = {
+            "drop member": lambda i, d: None if i.filename == plist else (i, d),
+            "drop last member": lambda i, d: None if i.filename == last else (i, d),
+            "rename member": lambda i, d: (renamed(i) if i.filename == last else i, d),
+            "member bytes": lambda i, d: (i, d[:-1] + b"!" if i.filename == binary else d),
+            "compress type": lambda i, d: (stored(i) if i.filename == plist else i, d),
+            "attributes": lambda i, d: (mode(i) if i.filename == binary else i, d),
+            "catalog bytes": lambda i, d: (i, d + b"\0" if i.filename == CAR_PATH else d),
+        }
+        for label, fn in cases.items():
+            with self.subTest(label):
+                write_ipa(self.src, self.car)
+                with mock.patch.object(patch_car, "_write_ipa", self.rewrite(fn)):
+                    ok, out = self.run_patch()
+                self.assert_untouched(ok, out)
+                self.assertIn("verify: ", out)
+        write_ipa(self.src, self.car)  # the unmodified rewrite passes verification
+        with mock.patch.object(patch_car, "_write_ipa", self.rewrite(lambda i, d: (i, d))):
+            self.assertTrue(self.run_patch()[0])
 
     def test_no_temp_files_left(self):
         write_ipa(self.src, None)
@@ -318,6 +483,16 @@ class CliTests(unittest.TestCase):
             self.assertIn("::warning::DavidTube logo: ", r.stdout)
             with open(src, "rb") as a, open(dst, "rb") as b:
                 self.assertEqual(a.read(), b.read())
+
+    def test_no_output_possible_exit_one(self):
+        with tempfile.TemporaryDirectory() as d:
+            dst = os.path.join(d, "out.ipa")
+            with open(dst, "wb") as f:
+                f.write(b"stale")
+            r = self.run_cli(os.path.join(d, "missing.ipa"), dst)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("::error::DavidTube logo: ", r.stdout)
+            self.assertFalse(os.path.exists(dst))
 
     def test_usage(self):
         for args in ((), ("only-one",), ("a", "b", "c")):

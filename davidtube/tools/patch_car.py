@@ -10,8 +10,9 @@ The result is re-parsed and verified before it is written.
 
 All or nothing: on any problem OUT.ipa becomes a byte-identical copy of
 IN.ipa, a `::warning::DavidTube logo: <reason>` line is printed and the exit
-code is still 0, so the build goes on with the original logo.  Wrong usage
-exits with 2.
+code is still 0, so the build goes on with the original logo.  If not even
+that copy can be written, OUT.ipa is removed, an `::error::` line is printed
+and the exit code is 1.  Wrong usage exits with 2.
 """
 import os
 import re
@@ -145,7 +146,7 @@ def _verify_catalog(data, out, expected):
     end = len(data)
     for addr, length in sorted(spans):
         if addr < end or addr + length > len(out):
-            raise CarError("verify: replaced blocks overlap")
+            raise CarError("verify: replaced blocks not in the appended tail or overlapping")
         end = addr + length
     for i in range(n):
         if i not in expected and new.block(i) != old.block(i):
@@ -228,24 +229,66 @@ def _verify_ipa(path, infos, car_info, patched):
                 raise CarError("verify: IPA member %s changed" % a.filename)
 
 
+def _temp_beside(path):
+    fd, tmp = tempfile.mkstemp(prefix=".davidtube-", suffix=".ipa",
+                               dir=os.path.dirname(os.path.abspath(path)))
+    os.close(fd)
+    return tmp
+
+
+def _unlink(path):
+    try:
+        os.unlink(path)
+    except FileNotFoundError:
+        pass
+
+
+def _install(tmp, ipa_in, ipa_out):
+    """Give tmp the input's permission bits and move it onto ipa_out."""
+    shutil.copymode(ipa_in, tmp)
+    os.replace(tmp, ipa_out)
+
+
 def _patch_ipa(ipa_in, ipa_out):
-    out_dir = os.path.dirname(os.path.abspath(ipa_out))
     with zipfile.ZipFile(ipa_in) as zin:
         infos = zin.infolist()
         car_info = _find_car(infos)
         patched = patch_catalog(zin.read(car_info))
-        fd, tmp = tempfile.mkstemp(prefix=".davidtube-", suffix=".ipa", dir=out_dir)
-        os.close(fd)
+        tmp = _temp_beside(ipa_out)
         try:
             _write_ipa(zin, infos, car_info, patched, tmp)
             _verify_ipa(tmp, infos, car_info, patched)
         except BaseException:
-            os.unlink(tmp)
+            _unlink(tmp)
             raise
     try:
-        os.replace(tmp, ipa_out)
+        _install(tmp, ipa_in, ipa_out)
     except BaseException:
-        os.unlink(tmp)
+        _unlink(tmp)
+        raise
+
+
+def _copy_bytes(src, dst):
+    shutil.copyfile(src, dst)
+
+
+def _atomic_copy(ipa_in, ipa_out):
+    """Make ipa_out a byte-identical copy of ipa_in, all at once.  On failure
+    no partial file is left and any older ipa_out is removed, then raise."""
+    tmp = None
+    try:
+        if os.path.exists(ipa_out) and os.path.samefile(ipa_in, ipa_out):
+            return  # in place: the input is already the output
+        tmp = _temp_beside(ipa_out)
+        _copy_bytes(ipa_in, tmp)
+        _install(tmp, ipa_in, ipa_out)
+    except BaseException:
+        if tmp:
+            _unlink(tmp)
+        try:
+            _unlink(ipa_out)  # a stale or partial OUT must not be used by the build
+        except Exception:
+            pass
         raise
 
 
@@ -254,25 +297,37 @@ def _reason(e):
     return " ".join(text.split()) or type(e).__name__
 
 
-def patch_ipa(ipa_in, ipa_out):
-    """Write ipa_out patched and return True, or write it as an exact copy of
-    ipa_in, print a ::warning:: line and return False.  Never raises."""
+def _say(line):
+    try:
+        print(line, flush=True)
+    except Exception:
+        pass
+
+
+def _run(ipa_in, ipa_out):
+    """'patched', 'copied' (ipa_out is an exact copy of ipa_in) or 'failed'
+    (no ipa_out exists).  Never raises."""
     try:
         _patch_ipa(ipa_in, ipa_out)
-        return True
+        return "patched"
     except Exception as e:
         reason = _reason(e)
     try:
-        if not (os.path.exists(ipa_out) and os.path.samefile(ipa_in, ipa_out)):
-            shutil.copyfile(ipa_in, ipa_out)
-        reason += "; IPA left unchanged"
+        _atomic_copy(ipa_in, ipa_out)
     except Exception as e:
-        reason += "; copying the input also failed: %s" % _reason(e)
-    try:
-        print("::warning::DavidTube logo: %s" % reason, flush=True)
-    except Exception:
-        pass
-    return False
+        _say("::error::DavidTube logo: %s; copying the input failed too (%s), "
+             "no output IPA written" % (reason, _reason(e)))
+        return "failed"
+    _say("::warning::DavidTube logo: %s; IPA left unchanged" % reason)
+    return "copied"
+
+
+def patch_ipa(ipa_in, ipa_out):
+    """Write ipa_out patched and return True.  Otherwise write it as an exact
+    copy of ipa_in, print a ::warning:: line and return False; if even that
+    copy fails, remove ipa_out, print an ::error:: line and return False.
+    Never raises."""
+    return _run(ipa_in, ipa_out) == "patched"
 
 
 def main(argv=None):
@@ -280,10 +335,11 @@ def main(argv=None):
     if len(args) != 2:
         print("usage: patch_car.py IN.ipa OUT.ipa", file=sys.stderr)
         return 2
-    if patch_ipa(args[0], args[1]):
+    status = _run(args[0], args[1])
+    if status == "patched":
         print("DavidTube logo: Assets.car patched (%d facets x %d scales)"
               % (len(TARGETS), len(SCALES)))
-    return 0
+    return 1 if status == "failed" else 0
 
 
 if __name__ == "__main__":
