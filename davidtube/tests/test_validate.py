@@ -133,6 +133,18 @@ class CompareTests(unittest.TestCase):
         self.assertEqual(compare_listings(BASE, list(reversed(cp(BASE))), T), [])
 
 
+class HeaderTests(unittest.TestCase):
+    def test_timestamp_in_header_is_ignored_but_other_keys_are_not(self):
+        base = full_listing()
+        a = [{"Timestamp": 1, "CoreUIVersion": 1}] + base
+        b = [{"Timestamp": 2, "CoreUIVersion": 1}] + base
+        c = [{"Timestamp": 2, "CoreUIVersion": 2}] + base
+        self.assertEqual(compare_listings(a, b, set(TARGETS)), [])
+        out = compare_listings(a, c, set(TARGETS))
+        self.assertEqual(len(out), 1)
+        self.assertIn("CoreUIVersion: 1 -> 2", out[0])
+
+
 class CliTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()

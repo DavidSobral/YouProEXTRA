@@ -42,6 +42,25 @@ def _canon(entry):
     return json.dumps(entry, sort_keys=True, separators=(",", ":"))
 
 
+VOLATILE_HEADER_KEYS = ("Timestamp",)  # assetutil derives it from the file, not the content
+
+
+def _stable(entry):
+    if isinstance(entry, dict):
+        return {k: v for k, v in entry.items() if k not in VOLATILE_HEADER_KEYS}
+    return entry
+
+
+def _changed_keys(a, b):
+    """Short description of how two JSON entries differ (just the differing keys)."""
+    da, db = json.loads(a), json.loads(b)
+    if not isinstance(da, dict) or not isinstance(db, dict):
+        return "%s -> %s" % (a, b)
+    keys = sorted(k for k in set(da) | set(db) if da.get(k) != db.get(k))
+    return "; ".join("%s: %s -> %s" % (k, json.dumps(da.get(k)), json.dumps(db.get(k)))
+                     for k in keys)
+
+
 def _label(key):
     name, scale = key
     return "%s (scale %s)" % (name, scale) if scale is not None else str(name)
@@ -71,7 +90,7 @@ def _diff_multiset(a, b, label, out):
         else:
             removed.append(x)
     if removed and rest:
-        out.append("changed entry: %s: %s -> %s" % (label, removed[0], rest[0]))
+        out.append("changed entry: %s: %s" % (label, _changed_keys(removed[0], rest[0])[:600]))
         removed, rest = removed[1:], rest[1:]
     for x in removed:
         out.append("removed entry: %s: %s" % (label, x))
@@ -112,7 +131,8 @@ def compare_listings(orig, patched, targets):
     _check_targets(patched, targets, "patched", out)
     po, to, no = _group(orig, targets)
     pp, tp, np_ = _group(patched, targets)
-    _diff_multiset(no, np_, "header/unnamed entries", out)
+    _diff_multiset([_stable(e) for e in no], [_stable(e) for e in np_],
+                   "header/unnamed entries", out)
     for key in sorted(set(po) | set(pp), key=lambda k: (str(k[0]), str(k[1]))):
         _diff_multiset(po.get(key, []), pp.get(key, []), _label(key), out)
     for key in sorted(set(to) | set(tp), key=lambda k: (str(k[0]), str(k[1]))):
