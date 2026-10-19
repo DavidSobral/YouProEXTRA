@@ -225,6 +225,9 @@ jobs:
         run: |
           pipx install --force https://github.com/asdfzxcvbn/pyzule-rw/archive/main.zip
 
+      - name: Patch DavidTube logo into IPA
+        run: sh davidtube/patch_ipa.sh youtube.ipa
+
       - name: Inject Tweaks Into IPA
         run: |
           tweaks=""

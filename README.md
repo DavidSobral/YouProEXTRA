@@ -101,3 +101,10 @@
    <li><strong>Date tested:</strong> Sep 28th, 2026</li>
    <li><strong>YouPro/YTLite/YTKP/YTKACE/YouMod:</strong> 1.3.1/6.0b1/6.1/1.1.0/2.0.0</li>
 </ul>
+
+## DavidTube logo
+
+This fork replaces the YouTube header wordmark with the DavidTube logo by patching `Assets.car` inside the IPA (`davidtube/patch_ipa.sh`) right before the tweaks are injected. It adds no tweak and no dylib.
+If anything goes wrong (patching or validation), the original logo is kept and the build continues.
+To resync with upstream: `git remote add upstream https://github.com/mrdrvt99/YouProEXTRA.git`, then `git fetch upstream && git merge upstream/main`.
+Besides this README, the only upstream file edited is the `Patch DavidTube logo into IPA` step in `.github/workflows/buildyoupro.yml`; keep it on conflict.
