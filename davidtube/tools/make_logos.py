@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Regenerate the DavidTube header logo PNGs from davidtube/source/*.svg.
+"""Compose the DavidTube header logo from davidtube/source/*.svg.
 
-Usage: python3 -I davidtube/tools/make_logos.py
+This module only provides `compose(svg)` (plus the SOURCES/SOURCE constants),
+used by render.py; it has no command line.
 """
 import base64
 import io
@@ -13,7 +14,6 @@ from PIL import Image, ImageDraw, ImageFont
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, ".."))
 SOURCE = os.path.join(ROOT, "source")
-BUNDLE = os.path.join(ROOT, "layout", "Library", "Application Support", "DavidTube.bundle")
 
 SOURCES = {
     "dark": "davidtube_fundo_escuro.svg",
@@ -26,7 +26,6 @@ ICON_BOX = (20, 20, 380, 380)  # x, y, w, h
 TEXT = "DavidTube"
 TEXT_X, BASELINE, FONT_SIZE, SPACING = 430, 292, 246, -7
 CROP = (28, 20, 1415, 400)  # left, top, right, bottom
-HEIGHTS = {"@2x": 240, "@3x": 360}
 
 
 def data_uri(svg, mime_re):
@@ -68,22 +67,3 @@ def compose(svg):
 
     l, t, r, b = CROP
     return canvas.crop((l * SS, t * SS, r * SS, b * SS))
-
-
-def main():
-    os.makedirs(BUNDLE, exist_ok=True)
-    for variant, name in SOURCES.items():
-        with open(os.path.join(SOURCE, name), encoding="utf-8") as f:
-            svg = f.read()
-        print(variant)
-        img = compose(svg)
-        for suffix, h in HEIGHTS.items():
-            w = round(img.width * h / img.height)
-            out = img.resize((w, h), Image.LANCZOS)
-            path = os.path.join(BUNDLE, "davidtube_%s%s.png" % (variant, suffix))
-            out.save(path, optimize=True)
-            print("  wrote %s (%dx%d)" % (os.path.basename(path), w, h))
-
-
-if __name__ == "__main__":
-    main()

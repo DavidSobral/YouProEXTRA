@@ -24,7 +24,8 @@ sh davidtube/mac_check.sh ~/Downloads/youtube.ipa
 
 O IPA original nunca é alterado. Tudo fica em `./davidtube-check/`:
 `work.ipa` (o IPA com patch), `original.car`, `patched.car`, `original.json`,
-`patched.json` (saída de `assetutil --info`).
+`patched.json` (saída de `assetutil --info`) e `original.err` / `patched.err`
+(stderr do `assetutil`, escritos pelo `mac_check.sh`; vale a pena enviá-los).
 
 ## 3. O que esperar
 
@@ -35,12 +36,12 @@ O IPA original nunca é alterado. Tudo fica em `./davidtube-check/`:
 - `::warning::...`: algo falhou (patch, extração ou validação) e o IPA ficou
   igual. Copia a mensagem completa.
 - Resumo final: "work.ipa DIFFERS" = patch aplicado; "IDENTICAL" = não aplicado.
-  Depois vêm o número de entradas dos dois JSON (o patched deve ter quase o
+  Depois vêm o número de entradas dos dois JSON (esperado, não confirmado: quase o
   mesmo número) e, para cada um dos 8 nomes (`youtube_logo`, `..._dark`,
   `..._cairo`, `..._dark_cairo`, `youtube_premium_logo`, `..._white`,
   `..._cairo`, `..._dark_cairo`), os campos antes/depois. Esperado: mesmos
   Scale/PixelWidth/PixelHeight (1x, 2x, 3x), Encoding possivelmente diferente;
-  SizeOnDisk maior (o catálogo cresce uns ~3 MB, é normal).
+  SizeOnDisk maior (esperado, não confirmado: o catálogo cresce uns ~3 MB).
 
 ## 4. Instalar e verificar no iPhone
 
@@ -62,8 +63,8 @@ procura `YouTube-...ips`. Partilha o ficheiro (ou as linhas `exception`,
 
 ## 6. O que me enviar
 
-Se algo falhar ou parecer estranho: faz zip de `original.json`, `patched.json`
-e do texto do terminal (e o crash log, se houver) e envia. Não contêm
+Se algo falhar ou parecer estranho: faz zip de `original.json`, `patched.json`,
+`original.err`, `patched.err` e do texto do terminal (e o crash log, se houver) e envia. Não contêm
 segredos.
 
 ## 7. Se falhar: o que tentamos a seguir

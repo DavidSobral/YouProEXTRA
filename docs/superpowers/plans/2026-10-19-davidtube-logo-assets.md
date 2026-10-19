@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - No injected dylib/tweak, no `.deb`, no hook (the Mach-O header has no slack; see spec).
-- Only upstream files touched: `.github/workflows/buildyoupro.yml` (one step) and `README.md` (appended note). Everything else under `davidtube/` and `docs/superpowers/`.
+- Only upstream files touched: `.github/workflows/buildyoupro.yml` (two steps: `Checkout DavidTube` and `Patch DavidTube logo into IPA`) and `README.md` (appended note). Everything else under `davidtube/` and `docs/superpowers/`.
 - Target facets (exact names): `youtube_logo`, `youtube_logo_dark`, `youtube_logo_cairo`, `youtube_logo_dark_cairo`, `youtube_premium_logo`, `youtube_premium_logo_white`, `youtube_premium_logo_cairo`, `youtube_premium_logo_dark_cairo`; scales 1x, 2x, 3x (rendition key attribute 12 = scale; identifier attribute 17; key attributes order from `KEYFORMAT`: `(7,13,12,15,16,8,17,1,2)` in the 21.41.5 catalog, always read from the file).
 - Variant: names containing `dark` or ending `_white` → white-text logo (`davidtube_fundo_escuro.svg`); all others → `#111111`-text logo (`davidtube_fundo_claro.svg`).
 - Output renditions are exactly the original link rendition's `width × height` pixels (e.g. `youtube_logo` 122×48 / 244×96 / 366×144; `youtube_premium_logo*` 129×48 / 258×96 / 387×144), BGRA, transparent background, logo contain-fit and centered.
@@ -63,7 +63,7 @@
 
 **Interfaces:**
 - Consumes: `Car` (Task 1) only in the integration test with the real catalog (skipped without `DAVIDTUBE_REAL_CAR`).
-- Produces: `parse_csi_header(csi: bytes) -> CsiHeader` (dataclass: `width, height, scale100, pixel_format: bytes, name: str, info_length: int, payload_kind: bytes` where `payload_kind` is `b'INLK'` or `b'CELM'`); `build_image_csi(template: bytes, name: str, width: int, height: int, scale100: int, bgra: bytes) -> bytes`; `find_template(car: Car) -> bytes` (first rendition whose payload is `CELM` with compression type 2 or 0 and pixel format `BGRA`; falls back to constructing none and raising `CarError`).
+- Produces: `parse_csi_header(csi: bytes) -> CsiHeader` (dataclass: `width, height, scale100, pixel_format: bytes, name: str, info_length: int, payload_kind: bytes` where `payload_kind` is `b'INLK'` or `b'CELM'`); `build_image_csi(template: bytes, name: str, width: int, height: int, scale100: int, bgra: bytes) -> bytes`; `find_template(car: Car) -> bytes` (smallest standalone rendition whose payload is `CELM` with pixel format `BGRA`, image layout, flags `0` or `0x10`, the standard info-list tags and not a `ZZZZPackedAsset`; raises `CarError` if none exists).
 
 - [ ] **Step 1: Write failing tests**: with a hand-built template CSI (header `ISTC`, version 1, 188-byte fixed part, an info list with the slice/metrics/composition/bitmap-info entries, `CELM` payload), assert `build_image_csi(...)` returns a blob whose parsed header has the requested width/height/scale/name, whose `CELM` payload decompresses with `zlib` to exactly `width*height*4` bytes equal to the input, and whose recorded payload size, info-list length and slice/metrics sizes are self-consistent. Name longer than 127 bytes → `ValueError`; `len(bgra) != width*height*4` → `ValueError`.
 - [ ] **Step 2: Run** → FAIL.
@@ -107,7 +107,7 @@
 
 **Files:**
 - Create: `davidtube/tools/validate_car.py`, `davidtube/patch_ipa.sh`
-- Modify: `.github/workflows/buildyoupro.yml` (insert one step directly before `Inject Tweaks Into IPA`); `README.md` (append a short "DavidTube logo" section: what it does, how to resync with upstream — the only expected conflict is the added step — and that failure leaves the original logo)
+- Modify: `.github/workflows/buildyoupro.yml` (insert two steps directly before `Inject Tweaks Into IPA`); `README.md` (append a short "DavidTube logo" section: what it does, how to resync with upstream — the only expected conflict is the added step — and that failure leaves the original logo)
 - Test: `davidtube/tests/test_validate.py` (the comparison logic only, with fake `assetutil` JSON)
 
 **Interfaces:**
