@@ -5,7 +5,7 @@ import unittest
 from davidtube.tests.fixtures import (BITMAP_INFO, BYTES_PER_ROW, COMPOSITION, IDENT, METRICS,
                                       SCALE, SLICES, build_catalog, make_csi, make_link_csi)
 from davidtube.tools.car import Car, CarError
-from davidtube.tools.csi import (build_image_csi, decode_image_payload, find_template,
+from davidtube.tools.csi import (CELM_FLAGS, build_image_csi, decode_image_payload, find_template,
                                  info_list, parse_csi_header, row_bytes)
 
 
@@ -81,7 +81,7 @@ class CsiTests(unittest.TestCase):
         il, = struct.unpack_from("<I", self.csi, 168)
         p = self.csi[184 + il:]
         magic, flags, comp, nchunks = struct.unpack_from("<4sIII", p)
-        self.assertEqual((magic, flags, comp), (b"MLEC", 3, 4))
+        self.assertEqual((magic, flags, comp), (b"MLEC", CELM_FLAGS, 4))
         stride, off, rows_seen, raw = row_bytes(self.w), 16, [], b""
         for _ in range(nchunks):
             tag, z1, z2, rows, clen = struct.unpack_from("<4sIIII", p, off)

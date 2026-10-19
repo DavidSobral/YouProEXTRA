@@ -52,7 +52,9 @@ class RenderLogoTest(unittest.TestCase):
                 # Centering is within 1px of ideal; allow 2px because the
                 # logo's own transparent margins and antialiased edge pixels
                 # make exact centering impossible.
-                self.assertLessEqual(abs(x0 - (w - 1 - x1)), 2)
+                pad = round(w * render.LEFT_PAD)
+                self.assertGreaterEqual(x0, pad)
+                self.assertLessEqual(abs((x0 - pad) - (w - 1 - x1)), 2)
                 self.assertLessEqual(abs(y0 - (h - 1 - y1)), 2)
         for w, h in ((244, 96), (366, 144)):
             with self.subTest(aspect=(w, h)):

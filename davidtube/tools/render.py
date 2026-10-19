@@ -7,6 +7,9 @@ from PIL import Image, ImageChops
 from davidtube.tools import make_logos
 
 
+LEFT_PAD = 0.13  # share of the width kept transparent on the left (header margin)
+
+
 @functools.lru_cache(maxsize=None)
 def _source(variant):
     with open(os.path.join(make_logos.SOURCE, make_logos.SOURCES[variant]), encoding="utf-8") as f:
@@ -14,7 +17,8 @@ def _source(variant):
 
 
 def render_logo(variant, width, height):
-    """Contain-fit and center the logo on a transparent width x height canvas.
+    """Contain-fit the logo into a transparent width x height canvas, leaving
+    LEFT_PAD of the width empty on the left and centering in the rest.
 
     Returns premultiplied BGRA bytes (len == width*height*4).
     """
@@ -23,13 +27,15 @@ def render_logo(variant, width, height):
     if width <= 0 or height <= 0:
         raise ValueError("width and height must be positive")
     src = _source(variant)
-    scale = min(width / src.width, height / src.height)
-    w = max(1, min(width, round(src.width * scale)))
+    pad = round(width * LEFT_PAD)
+    avail = width - pad
+    scale = min(avail / src.width, height / src.height)
+    w = max(1, min(avail, round(src.width * scale)))
     h = max(1, min(height, round(src.height * scale)))
     # Resize in premultiplied space to avoid dark fringes at the edges.
     logo = src.convert("RGBa").resize((w, h), Image.LANCZOS)
     canvas = Image.new("RGBa", (width, height), (0, 0, 0, 0))
-    canvas.paste(logo, ((width - w) // 2, (height - h) // 2))
+    canvas.paste(logo, (pad + (avail - w) // 2, (height - h) // 2))
     # Pillow's "RGBa" is premultiplied RGBA; emit it as B,G,R,A.
     r, g, b, a = canvas.split()
     # LANCZOS ringing can push a channel above alpha; clamp to stay valid.

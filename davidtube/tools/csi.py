@@ -23,7 +23,7 @@ payload, so their framing cannot be verified.  The only non-DeepMap bitmaps
 are LZFSE (4) renditions in the main Assets.car, whose framing was verified
 by decoding them with Apple's reference lzfse decoder:
 
-    'CELM' (bytes 'MLEC'), flags 3, compression 4, chunk count,
+    'CELM' (bytes 'MLEC'), flags, compression 4, chunk count,
     chunks: 'CBCK' (bytes 'KCBC'), 0, 0, row count, length, LZFSE stream
 
 with height // 3 rows per chunk plus a remainder chunk; each chunk decodes
@@ -51,7 +51,11 @@ TEMPLATE_TAGS = [1001, 1003, 1004, 1006, 1007]
 LAYOUT_IMAGE = 12
 CELM, CBCK = b"MLEC", b"KCBC"  # u32 FourCCs 'CELM' and 'CBCK' as stored
 LZFSE = 4
-CELM_FLAGS = 3  # value of every LZFSE rendition observed
+# CELM flags word.  Only one LZFSE rendition exists in the IPA (an opaque-looking
+# 1024pt icon, flags 3); every rendition carrying 2 or 3 looks like an opaque
+# photo/background, while icons and sprites with transparency carry 0.  Flags 3
+# made CoreUI draw our transparent pixels as opaque black on device, so use 0.
+CELM_FLAGS = 0
 LZ_RAW, LZ_END = b"bvx-", b"bvx$"
 
 
